@@ -113,9 +113,3 @@ class miner :
                     id_rola = id_rola + 1
         connection.commit()
         connection.close()
-
-    if os.path.isfile("music.db"):
-        populate_with_tags()
-    else :
-        create_database()
-        populate_with_tags()
