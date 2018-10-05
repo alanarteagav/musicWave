@@ -3,7 +3,7 @@ import os.path
 import sqlite3
 from mp3_tagger import MP3File, VERSION_2
 
-class miner :
+class Miner :
     def create_database():
         connection = sqlite3.connect("music.db")
         cursor = connection.cursor()
