@@ -4,9 +4,11 @@ import sqlite3
 from mp3_tagger import MP3File, VERSION_2
 
 class Miner :
+    connection = sqlite3.connect("music.db")
+    connection.text_factory = str
+    cursor = connection.cursor
+
     def create_database():
-        connection = sqlite3.connect("music.db")
-        cursor = connection.cursor()
         cursor.execute("""CREATE TABLE types (
                               id_type INTEGER PRIMARY KEY ,
                               description TEXT
@@ -64,12 +66,8 @@ class Miner :
         connection.close()
 
     def populate_database():
-        connection = sqlite3.connect("music.db")
-        connection.text_factory = str
-        cursor = connection.cursor()
-
+        
         home = os.getenv("HOME")
-
         album_dict = {}
         artist_dict = {}
         artist_count = 1
