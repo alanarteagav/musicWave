@@ -18,8 +18,10 @@ link:
 musicWave uses the following dependencies:
 
 - mp3_tagger
+- PyGObject 3.30.1
 
 to install them, you should run the following commands in the terminal:
 ```
 pip3 install mp3-tagger
+pip3 install PyGObject
 ```
