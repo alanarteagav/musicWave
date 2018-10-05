@@ -63,7 +63,7 @@ class miner :
         connection.commit()
         connection.close()
 
-    def populate_with_tags():
+    def populate_database():
         connection = sqlite3.connect("music.db")
         connection.text_factory = str
         cursor = connection.cursor()
