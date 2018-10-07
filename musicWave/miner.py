@@ -66,7 +66,7 @@ class Miner :
         connection.close()
 
     def populate_database():
-        
+
         home = os.getenv("HOME")
         album_dict = {}
         artist_dict = {}
