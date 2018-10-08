@@ -11,6 +11,7 @@ import unittest
 import sqlite3
 import os
 from sqlite3 import Error
+from mp3_tagger import MP3File, VERSION_2
 
 class TestMiner(unittest.TestCase):
 
@@ -75,7 +76,62 @@ class TestMiner(unittest.TestCase):
 
 
     def test_populate_database(self):
-        self.fail('Fail')
+        mp3_file = open("testA.mp3","w+")
+        mp3_file.close()
+        mp3_file = open("testB.mp3","w+")
+        mp3_file.close()
+
+        mp3_testA = MP3File("testA.mp3")
+        mp3_testA.set_version(VERSION_2)
+        mp3_testA.comment = "Comment"
+        mp3_testA.song = "Caravan"
+        mp3_testA.artist = "Andrew Neiman"
+        mp3_testA.album = "Shaffer Conservatory Studio Band"
+        mp3_testA.track = "6"
+        mp3_testA.year = "2014"
+        mp3_testA.genre = "Jazz"
+        mp3_testA.save()
+
+        mp3_testA = MP3File("testB.mp3")
+        mp3_testA.set_version(VERSION_2)
+        mp3_testA.comment = "Comment"
+        mp3_testA.song = "Lost Stars"
+        mp3_testA.artist = "Dave Kohl"
+        mp3_testA.album = "On The Road"
+        mp3_testA.track = "1"
+        mp3_testA.year = "2012"
+        mp3_testA.genre = "Pop"
+        mp3_testA.save()
+
+        self.miner_test.create_database()
+        self.miner_test.populate_database(path.dirname(path.dirname(path.abspath(__file__))))
+
+        connection = sqlite3.connect("test.db")
+        cursor = connection.cursor()
+        cursor.execute("SELECT rolas.title, performers.name, \
+                               albums.name, rolas.genre \
+                        FROM rolas \
+                        INNER JOIN albums ON albums.id_album = rolas.id_album \
+                        INNER JOIN performers ON performers.id_performer \
+                            = rolas.id_performer")
+        song1 = ('Lost Stars', 'Dave Kohl',
+                 'On The Road', 'Pop')
+        song2 = ('Caravan', 'Andrew Neiman',
+                 'Shaffer Conservatory Studio Band', 'Jazz')
+        try:
+            songs_from_database = cursor.fetchall()
+            self.assertTrue(song1 == songs_from_database[0] or \
+                            song1 == songs_from_database[1],
+                            'message')
+            self.assertTrue(song2 == songs_from_database[0] or \
+                            song2 == songs_from_database[1],
+                            'message')
+        except:
+            self.fail('Could not get songs from database')
+
+        os.remove("testA.mp3")
+        os.remove("testB.mp3")
+        os.remove("test.db")
 
 
 if __name__ == '__main__':
