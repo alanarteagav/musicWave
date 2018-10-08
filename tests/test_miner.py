@@ -79,9 +79,9 @@ class TestMinerPopulateDatabase(unittest.TestCase):
         self.miner_test = Miner(directory="", database_name="test.db")
 
     def tearDown(self):
-        os.remove("test.db")
         os.remove("testA.mp3")
         os.remove("testB.mp3")
+        os.remove("test.db")
 
 
     def test_populate_database(self):
