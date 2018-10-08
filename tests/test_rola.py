@@ -59,4 +59,8 @@ class TestRola(unittest.TestCase):
         self.assertEqual(self.rola_test.get_genre(), "jazz", 'set genre fail')
 
 if __name__ == '__main__':
-    unittest.main()
+    try:
+        suite = unittest.TestLoader().loadTestsFromTestCase(TestRola)
+    except:
+        pass
+    unittest.TextTestRunner(verbosity=2).run(suite)
