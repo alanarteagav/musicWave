@@ -13,13 +13,13 @@ import os
 from sqlite3 import Error
 from mp3_tagger import MP3File, VERSION_2
 
-class TestMiner(unittest.TestCase):
+class TestMinerCreateDatabase(unittest.TestCase):
 
     def setUp(self):
         self.miner_test = Miner(directory="", database_name="test.db")
 
-    def setDown(self):
-        pass
+    def tearDown(self):
+        os.remove("test.db")
 
     def test_create_database(self):
         self.miner_test.create_database()
@@ -72,7 +72,16 @@ class TestMiner(unittest.TestCase):
                              'in_group table not created')
         except:
             self.fail('Fail, could not get table name')
+
+class TestMinerPopulateDatabase(unittest.TestCase):
+
+    def setUp(self):
+        self.miner_test = Miner(directory="", database_name="test.db")
+
+    def tearDown(self):
         os.remove("test.db")
+        os.remove("testA.mp3")
+        os.remove("testB.mp3")
 
 
     def test_populate_database(self):
@@ -108,12 +117,16 @@ class TestMiner(unittest.TestCase):
 
         connection = sqlite3.connect("test.db")
         cursor = connection.cursor()
-        cursor.execute("SELECT rolas.title, performers.name, \
-                               albums.name, rolas.genre \
-                        FROM rolas \
-                        INNER JOIN albums ON albums.id_album = rolas.id_album \
-                        INNER JOIN performers ON performers.id_performer \
-                            = rolas.id_performer")
+        try:
+            cursor.execute("SELECT rolas.title, performers.name, \
+                                   albums.name, rolas.genre \
+                            FROM rolas \
+                            INNER JOIN albums ON albums.id_album = rolas.id_album \
+                            INNER JOIN performers ON performers.id_performer \
+                                = rolas.id_performer")
+        except:
+            self.fail('Could not get songs from database')
+
         song1 = ('Lost Stars', 'Dave Kohl',
                  'On The Road', 'Pop')
         song2 = ('Caravan', 'Andrew Neiman',
@@ -129,14 +142,18 @@ class TestMiner(unittest.TestCase):
         except:
             self.fail('Could not get songs from database')
 
-        os.remove("testA.mp3")
-        os.remove("testB.mp3")
-        os.remove("test.db")
-
-
 if __name__ == '__main__':
-    try:
-        suite = unittest.TestLoader().loadTestsFromTestCase(TestMiner)
-    except:
-        pass
-    unittest.TextTestRunner(verbosity=2).run(suite)
+
+    test_classes_to_run = [TestMinerCreateDatabase,
+                           TestMinerPopulateDatabase]
+
+    loader = unittest.TestLoader()
+
+    suites_list = []
+    for test_class in test_classes_to_run:
+        suite = loader.loadTestsFromTestCase(test_class)
+        suites_list.append(suite)
+
+    final_suite = unittest.TestSuite(suites_list)
+
+    unittest.TextTestRunner(verbosity=2).run(final_suite)
