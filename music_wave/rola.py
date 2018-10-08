@@ -47,33 +47,3 @@ class Rola :
 
     def set_genre(self, genre):
         pass
-
-class Rola_builder :
-
-    def __init__(self):
-        pass
-        self.rola = Rola()
-
-    def with_id(self, id):
-        pass
-
-    def with_performer(self, performer):
-        pass
-
-    def with_album(self, album):
-        pass
-
-    def with_path(self, path):
-        pass
-
-    def with_title(self, title):
-        pass
-
-    def with_track(self, track):
-        pass
-
-    def with_year(self, year):
-        pass
-
-    def with_genre(self, genre):
-        pass

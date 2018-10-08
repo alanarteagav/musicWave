@@ -58,33 +58,5 @@ class TestRola(unittest.TestCase):
         self.rola_test.set_genre("jazz")
         self.assertEqual(self.rola_test.get_genre(), "jazz", 'set genre fail')
 
-    def test_rola_builder(self):
-        new_rola_test = Rola_builder() \
-                        .with_id(2) \
-                        .with_performer(2) \
-                        .with_album(1) \
-                        .with_path("shaffer/neiman/caravan_live.mp3") \
-                        .with_title("Caravan (live)") \
-                        .with_track(6) \
-                        .with_year(2014) \
-                        .with_genre("jazz")
-        self.assertEqual(new_rola_test.get_id(), 2,
-                         'build id fail')
-        self.assertEqual(new_rola_test.get_performer(), 2,
-                         'build performer fail')
-        self.assertEqual(new_rola_test.get_album(), 1,
-                         'build album fail')
-        self.assertEqual(new_rola_test.get_path(),
-                        "shaffer/neiman/caravan_live.mp3",
-                         'build path fail')
-        self.assertEqual(new_rola_test.get_title(), "Caravan (live)",
-                         'build title fail')
-        self.assertEqual(new_rola_test.get_track(), 6,
-                         'build track fail')
-        self.assertEqual(new_rola_test.get_year(), 2014,
-                         'build year fail')
-        self.assertEqual(new_rola_test.get_genre(), "jazz",
-                         'get genre fail')
-
 if __name__ == '__main__':
     unittest.main()
