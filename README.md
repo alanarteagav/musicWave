@@ -1,4 +1,4 @@
-# musicWave
+# musicWave ![musicWave Logo](resources/musicWave50.png)
 System to create and manipulate a musical database.
 
 ## Python Version
