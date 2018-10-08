@@ -3,9 +3,9 @@ if __name__ == '__main__':
         import sys
         from os import path
         sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-        from music_wave.rola import Rola, Rola_builder
+        from music_wave.rola import Rola
     else:
-        from ..music_wave.rola import Rola, Rola_builder
+        from ..music_wave.rola import Rola
 
 import unittest
 
