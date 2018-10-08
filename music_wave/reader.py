@@ -4,3 +4,4 @@ class Reader :
         self.path = path
 
     def get_rolas_from_database(self):
+        pass

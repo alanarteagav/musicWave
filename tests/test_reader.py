@@ -9,7 +9,7 @@ if __name__ == '__main__':
 
 import unittest
 
-class TestMiner(unittest.TestCase):
+class TestReader(unittest.TestCase):
 
     def setUp(self):
         self.miner_test = Reader(path)
@@ -18,7 +18,7 @@ class TestMiner(unittest.TestCase):
         pass
 
     def test_get_rolas_from_database(self):
-        self.self.assert_(False)
+        self.assert_(False)
 
 
 if __name__ == '__main__':

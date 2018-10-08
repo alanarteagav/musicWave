@@ -18,10 +18,10 @@ class TestMiner(unittest.TestCase):
         pass
 
     def test_create_database(self):
-        self.self.assert_(False)
+        self.assert_(False)
 
     def test_populate_database(self):
-        self.self.assert_(False)
+        self.assert_(False)
 
 
 if __name__ == '__main__':

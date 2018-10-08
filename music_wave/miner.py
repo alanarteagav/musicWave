@@ -4,5 +4,7 @@ class Miner :
         self.path = path
 
     def create_database(self):
+        pass
 
     def populate_database(self):
+        pass
