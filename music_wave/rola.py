@@ -1,36 +1,46 @@
 class Rola :
 
+    def __init__(self, id, performer_id, album_id, path, title, track, year, genre):
+        self.id = id
+        self.performer_id = performer_id
+        self.album_id = album_id
+        self.path = path
+        self.title = title
+        self.track = track
+        self.year = year
+        self.genre = genre
+
     def get_id(self):
-        pass
+        return self.id
 
-    def get_performer(self):
-        pass
+    def get_performer_id(self):
+        return self.performer_id
 
-    def get_album(self):
-        pass
+    def get_album_id(self):
+        return self.album_id
 
     def get_path(self):
-        pass
+        return self.path
 
     def get_title(self):
-        pass
+        return self.title
 
     def get_track(self):
-        pass
+        return self.track
 
     def get_year(self):
-        pass
+        return self.year
 
     def get_genre(self):
-        pass
+        return self.genre
 
     def set_id(self, id):
         pass
 
-    def set_performer(self, performer):
+    def set_performer_id(self, performer_id):
         pass
 
-    def set_album(self, album):
+    def set_album_id(self, album_id):
         pass
 
     def set_path(self, path):
