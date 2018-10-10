@@ -35,25 +35,25 @@ class Rola :
         return self.genre
 
     def set_id(self, id):
-        pass
+        self.id = id
 
     def set_performer_id(self, performer_id):
-        pass
+        self.performer_id = performer_id
 
     def set_album_id(self, album_id):
-        pass
+        self.album_id = album_id
 
     def set_path(self, path):
-        pass
+        self.path = path
 
     def set_title(self, title):
-        pass
+        self.title = title
 
     def set_track(self, track):
-        pass
+        self.track = track
 
     def set_year(self, year):
-        pass
+        self.year = year
 
     def set_genre(self, genre):
-        pass
+        self.genre = genre

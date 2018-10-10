@@ -12,7 +12,9 @@ import unittest
 class TestRola(unittest.TestCase):
 
     def setUp(self):
-        self.rola_test = Rola()
+        self.rola_test = Rola(id = 0, performer_id = 0, album_id = 0,
+                            path = 'null', title = 'null', track = 0,
+                            year = 0, genre = 'null')
 
     def setDown(self):
         pass
@@ -23,14 +25,14 @@ class TestRola(unittest.TestCase):
         self.assertEqual(self.rola_test.get_id(), 113, 'set id fail')
 
     def test_set_get_performer(self):
-        self.assertEqual(self.rola_test.get_performer(), 0, 'get performer fail')
-        self.rola_test.set_performer(113)
-        self.assertEqual(self.rola_test.get_performer(), 113, 'set performer fail')
+        self.assertEqual(self.rola_test.get_performer_id(), 0, 'get performer fail')
+        self.rola_test.set_performer_id(113)
+        self.assertEqual(self.rola_test.get_performer_id(), 113, 'set performer fail')
 
     def test_set_get_album(self):
-        self.assertEqual(self.rola_test.get_album(), 0, 'get album fail')
-        self.rola_test.set_album(113)
-        self.assertEqual(self.rola_test.get_album(), 113, 'set album fail')
+        self.assertEqual(self.rola_test.get_album_id(), 0, 'get album fail')
+        self.rola_test.set_album_id(113)
+        self.assertEqual(self.rola_test.get_album_id(), 113, 'set album fail')
 
     def test_set_get_path(self):
         self.assertEqual(self.rola_test.get_path(), "null", 'get path fail')
