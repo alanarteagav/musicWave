@@ -1,6 +1,6 @@
 import os
 import os.path
-from .rola import Rola
+from rola import Rola
 from mp3_tagger import MP3File, VERSION_2
 
 class Miner :

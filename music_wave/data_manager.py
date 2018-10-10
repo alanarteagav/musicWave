@@ -1,6 +1,6 @@
 import sqlite3
 from sqlite3 import Error
-from .rola import Rola
+from rola import Rola
 
 
 class Data_manager :
