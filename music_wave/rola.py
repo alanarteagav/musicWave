@@ -37,8 +37,8 @@ class Rola :
     def set_id(self, id):
         self.id = id
 
-    def set_performer_id(self, performer):
-        self.performer = performer
+    def set_performer_id(self, performer_id):
+        self.performer_id = performer_id
 
     def set_album_id(self, album_id):
         self.album_id = album_id
@@ -53,7 +53,7 @@ class Rola :
         self.track = track
 
     def set_year(self, year):
-        self.year = Year
+        self.year = year
 
     def set_genre(self, genre):
         self.genre = genre
