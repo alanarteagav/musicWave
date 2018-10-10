@@ -24,7 +24,7 @@
       <column type="gchararray"/>
       <!-- column-name artists -->
       <column type="gchararray"/>
-      <!-- column-name gchararray1 -->
+      <!-- column-name albums -->
       <column type="gchararray"/>
     </columns>
   </object>
