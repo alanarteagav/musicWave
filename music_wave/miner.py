@@ -47,8 +47,9 @@ class Miner :
                             album_count = album_count + 1
 
                     song = mp3.song
-                    track = mp3.track
-                    year = mp3.year
+                    track_retrieved = mp3.track
+                    track = int(track_retrieved.split("/")[0])
+                    year = int(mp3.year)
                     genre = mp3.genre
                     path_string = os.path.abspath(os.path.join(root, file))
                     rola = Rola(id=rola_count, performer_id=artist_id,
