@@ -1,10 +1,7 @@
 import os
 import os.path
 from rola import Rola
-from mp3_tagger import MP3File, VERSION_2
-import mutagen
 from mutagen.id3 import ID3
-from mutagen.mp3 import MP3
 
 class Miner :
 
@@ -13,6 +10,7 @@ class Miner :
         self.rolas = {}
         self.performers = {}
         self.albums = {}
+        self.progress = 0.0
 
     def mine(self) :
         rola_count = 1
@@ -29,69 +27,69 @@ class Miner :
                 if file.endswith('.mp3'):
                     paths.append(os.path.abspath(os.path.join(root, file)))
 
-        print(len(paths))
+        processed_files = 0
+        total_files = len(paths)
+
         for path in paths:
+            processed_files += 1
+            self.progress = processed_files * 1.0 / total_files
+
             audio = ID3(path)
 
-            file = mutagen.File(path)
-            artwork = file.tags['APIC:'].data
-            with open('image.jpg', 'wb') as img:
-                img.write(artwork)
-
-
-            file = MP3(path)
-
-            if file.tags:
-                for frame in file.tags.getall("APIC"):
-                    print(frame.pprint())
-
-            mp3 = MP3File(path)
-            mp3.set_version(VERSION_2)
-
             artist_id = 0
-            artist = mp3.artist
-            if artist != [] :
-                if str(artist) in performers.keys() :
-                    artist_id = performers[str(artist)]
+            try:
+                artist = audio['TPE1'].text[0]
+                if artist in performers.keys() :
+                    artist_id = performers[artist]
                 else :
-                    performers[str(artist)] = artist_count
+                    performers[artist] = artist_count
                     artist_id = artist_count
                     artist_count = artist_count + 1
-            album = mp3.album
+            except:
+                pass
+
+
             album_id = 0
-            if album != [] :
-                if str(album) in albums.keys() :
-                    album_id = albums[str(album)]
-                else :
-                    albums[str(album)] = album_count
-                    album_id = album_count
-                    album_count = album_count + 1
+            try:
+                album = audio['TALB'].text[0]
+                if album != [] :
+                    if str(album) in albums.keys() :
+                        album_id = albums[str(album)]
+                    else :
+                        albums[str(album)] = album_count
+                        album_id = album_count
+                        album_count = album_count + 1
+            except:
+                pass
 
-            song_retrieved = mp3.song
-            if song_retrieved != [] :
-                song = str(song_retrieved).replace("'", "´")
-            else :
-                song = "null"
+            try:
+                title_tag = audio['TIT2'].text[0]
+                title = str(title_tag).replace("'", "´")
+            except:
+                title = "Unknown"
 
-            track_retrieved = mp3.track
-            if track_retrieved != [] :
-                track = int(track_retrieved.split("/")[0])
-            else :
+            try:
+                track_tag = audio['TRCK'].text[0]
+                track = int(track_tag.split("/")[0])
+            except:
                 track = 0
 
-            year_retrieved = mp3.year
-            if year_retrieved != [] :
-                try:
-                    year = int(mp3.year)
-                except:
-                    year = 2018
-            else :
+            try:
+                year_tag = audio['TDRC'].text[0]
+                year = int(year_tag)
+            except:
                 year = 2018
-            genre = mp3.genre
+
+            try:
+                genre = audio['TCON'].text[0]
+
+            except:
+                genre = "Unknown"
+
             path_string = str(path)
             rola = Rola(id=rola_count, performer_id=artist_id,
                         album_id=album_id, path=path_string,
-                        title=song, track=track, year=year, genre=genre)
+                        title=title, track=track, year=year, genre=genre)
             rolas[rola_count] = rola
             rola_count = rola_count + 1
         self.rolas = rolas
@@ -106,3 +104,6 @@ class Miner :
 
     def get_albums(self) :
         return self.albums
+
+    def get_progress(self):
+        return self.progress
