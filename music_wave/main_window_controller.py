@@ -6,6 +6,60 @@ import os.path
 import gi
 from gi.repository import Gtk
 
+def mine(trigger, data_access_object, miner, treeview):
+
+
+    listmodel = Gtk.ListStore(str, str, str, str)
+    rolas_representation = []
+
+    if os.path.isfile("rolas.db"):
+        os.remove("rolas.db")
+        data_access_object.create_database()
+        miner_object.mine()
+        rolas = miner_object.get_rolas()
+        albums = miner_object.get_albums()
+        performers = miner_object.get_performers()
+        data_access_object.populate_database(rolas = rolas ,
+                                             performers = performers,
+                                             albums = albums)
+        db_rolas = data_access_object.get_rolas()
+        db_albums = data_access_object.get_albums()
+        db_performers = data_access_object.get_performers()
+        for rola in db_rolas.values():
+            representation = []
+            representation.append(rola.get_title())
+            representation.append(
+                data_access_object.get_album(rola.get_album_id())[2])
+            representation.append(
+                data_access_object.get_performer(rola.get_performer_id())[2])
+            representation.append(rola.get_genre())
+            rolas_representation.append(representation)
+
+    else :
+        data_access_object.create_database()
+        miner_object.mine()
+        rolas = miner_object.get_rolas()
+        albums = miner_object.get_albums()
+        performers = miner_object.get_performers()
+        data_access_object.populate_database(rolas = rolas ,
+                                             performers = performers,
+                                             albums = albums)
+        db_rolas = data_access_object.get_rolas()
+        db_albums = data_access_object.get_albums()
+        db_performers = data_access_object.get_performers()
+        for rola in db_rolas.values():
+            representation = []
+            representation.append(rola.get_title())
+            representation.append(
+                data_access_object.get_album(rola.get_album_id())[2])
+            representation.append(
+                data_access_object.get_performer(rola.get_performer_id())[2])
+            representation.append(rola.get_genre())
+            rolas_representation.append(representation)
+    for item in rolas_representation :
+        listmodel.append(item)
+    treeview.set_model(listmodel)
+
 if __name__ == "__main__" :
     gi.require_version('Gtk', '3.0')
     home = os.getenv("HOME")
@@ -59,60 +113,10 @@ if __name__ == "__main__" :
             representation.append(rola.get_genre())
             rolas_representation.append(representation)
 
-    class Handler:
-        def mine(self, *args):
-            if os.path.isfile("rolas.db"):
-                os.remove("rolas.db")
-                data_access_object.create_database()
-                miner_object.mine()
-                rolas = miner_object.get_rolas()
-                albums = miner_object.get_albums()
-                performers = miner_object.get_performers()
-                data_access_object.populate_database(rolas = rolas ,
-                                                     performers = performers,
-                                                     albums = albums)
-                db_rolas = data_access_object.get_rolas()
-                db_albums = data_access_object.get_albums()
-                db_performers = data_access_object.get_performers()
-                for rola in db_rolas.values():
-                    representation = []
-                    representation.append(rola.get_title())
-                    representation.append(
-                        data_access_object.get_album(rola.get_album_id())[2])
-                    representation.append(
-                        data_access_object.get_performer(rola.get_performer_id())[2])
-                    representation.append(rola.get_genre())
-                    rolas_representation.append(representation)
-
-            else :
-                data_access_object.create_database()
-                miner_object.mine()
-                rolas = miner_object.get_rolas()
-                albums = miner_object.get_albums()
-                performers = miner_object.get_performers()
-                data_access_object.populate_database(rolas = rolas ,
-                                                     performers = performers,
-                                                     albums = albums)
-                db_rolas = data_access_object.get_rolas()
-                db_albums = data_access_object.get_albums()
-                db_performers = data_access_object.get_performers()
-                for rola in db_rolas.values():
-                    representation = []
-                    representation.append(rola.get_title())
-                    representation.append(
-                        data_access_object.get_album(rola.get_album_id())[2])
-                    representation.append(
-                        data_access_object.get_performer(rola.get_performer_id())[2])
-                    representation.append(rola.get_genre())
-                    rolas_representation.append(representation)
-
-        def exit(self, *args):
-            Gtk.main_quit()
 
 
     builder = Gtk.Builder()
     builder.add_from_file("resources/main.glade")
-    builder.connect_signals(Handler())
 
     columns = ["Title",
                "Album",
@@ -124,6 +128,13 @@ if __name__ == "__main__" :
         rolas_liststore.append(element)
 
     treeview = builder.get_object("treeview")
+
+    handlers = {
+        "exit": Gtk.main_quit,
+        "mine": (mine, data_access_object, miner_object, treeview)
+    }
+
+    builder.connect_signals(handlers)
 
 
     for i, column in enumerate(columns):
