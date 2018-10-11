@@ -4,12 +4,36 @@ import data_manager
 import os
 import os.path
 import gi
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk.PixbufLoader
+import mutagen
+from mutagen.id3 import ID3
+
+def selection(tree_selection, title_label, album_label, performer_label, imageview) :
+    (model, iter) = tree_selection.get_selected()
+    title = model.get_value(iter,0)
+    album = model.get_value(iter,1)
+    performer = model.get_value(iter,2)
+    path = model.get_value(iter,4)
+    print(path)
+
+    title_label.set_text(title)
+    album_label.set_text(album)
+
+    audio = ID3(path)
+    file = mutagen.File(path)
+    artwork_data = file.tags['APIC:'].data
+
+    loader = Gdk.GdkPixbuf.PixbufLoader("jpeg")
+    loader.write(artwork_data)
+    loader.close()
+    pixbuf = loader.get_pixbuf()
+    imageview.set_from_pixbuf(pixbuf)
+
 
 def mine(trigger, data_access_object, miner, treeview):
 
 
-    listmodel = Gtk.ListStore(str, str, str, str)
+    listmodel = Gtk.ListStore(str, str, str, str, path)
     rolas_representation = []
 
     if os.path.isfile("rolas.db"):
@@ -33,6 +57,7 @@ def mine(trigger, data_access_object, miner, treeview):
             representation.append(
                 data_access_object.get_performer(rola.get_performer_id())[2])
             representation.append(rola.get_genre())
+            representation.append(rola.get_path())
             rolas_representation.append(representation)
 
     else :
@@ -55,6 +80,7 @@ def mine(trigger, data_access_object, miner, treeview):
             representation.append(
                 data_access_object.get_performer(rola.get_performer_id())[2])
             representation.append(rola.get_genre())
+            representation.append(rola.get_path())
             rolas_representation.append(representation)
     for item in rolas_representation :
         listmodel.append(item)
@@ -93,6 +119,7 @@ if __name__ == "__main__" :
             representation.append(
                 data_access_object.get_performer(rola.get_performer_id())[2])
             representation.append(rola.get_genre())
+            representation.append(rola.get_path())
             rolas_representation.append(representation)
 
     else :
@@ -111,6 +138,7 @@ if __name__ == "__main__" :
             representation.append(
                 data_access_object.get_performer(rola.get_performer_id())[2])
             representation.append(rola.get_genre())
+            representation.append(rola.get_path())
             rolas_representation.append(representation)
 
 
@@ -121,7 +149,8 @@ if __name__ == "__main__" :
     columns = ["Title",
                "Album",
                "Performer",
-               "Genre"]
+               "Genre",
+               "Path"]
 
     rolas_liststore = builder.get_object("rolas_liststore")
     for element in rolas_representation:
@@ -144,6 +173,16 @@ if __name__ == "__main__" :
         col = Gtk.TreeViewColumn(column, cell, text=i)
         # and it is appended to the treeview
         treeview.append_column(col)
+
+    title_label = builder.get_object("title_label")
+    album_label = builder.get_object("album_label")
+    performer_label = builder.get_object("performer_label")
+    imageview = builder.get_object("imageview")
+
+
+    tree_selection = treeview.get_selection()
+    tree_selection.set_mode(Gtk.SelectionMode.SINGLE)
+    tree_selection.connect("changed", selection, title_label, album_label, performer_label, imageview)
 
     window = builder.get_object("main_window")
     window.show_all()
