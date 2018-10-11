@@ -11,4 +11,18 @@ if __name__ == "__main__" :
     miner_object = miner.Miner(path)
     miner_object.mine()
     rolas = miner_object.get_rolas()
-    print(rolas)
+    albums = miner_object.get_albums()
+    performers = miner_object.get_performers()
+
+    for rola in rolas.values() :
+        print("================================")
+        print(rola.get_title())
+        print("================================")
+
+    for performer in performers.values():
+        print("///////////////////")
+        print(performer)
+
+    for album in albums.values():
+        print("@@@@@@@@@@@@@@@@@@")
+        print(album)
