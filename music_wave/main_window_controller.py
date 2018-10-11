@@ -25,3 +25,7 @@ if __name__ == "__main__" :
         data_access_object.populate_database(rolas = rolas ,
                                              performers = performers,
                                              albums = albums)
+
+    database_rolas = data_access_object.get_rolas()
+    for rola in rolas.values():
+        print(data_access_object.get_performer(rola.get_performer_id())[2])
