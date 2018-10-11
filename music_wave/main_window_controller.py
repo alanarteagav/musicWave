@@ -14,15 +14,14 @@ if __name__ == "__main__" :
     albums = miner_object.get_albums()
     performers = miner_object.get_performers()
 
-    for rola in rolas.values() :
-        print("================================")
-        print(rola.get_title())
-        print("================================")
+    data_access_object = data_manager.Data_manager("", "rolas.db")
 
-    for performer in performers.values():
-        print("///////////////////")
-        print(performer)
-
-    for album in albums.values():
-        print("@@@@@@@@@@@@@@@@@@")
-        print(album)
+    if os.path.isfile("rolas.db"):
+        data_access_object.populate_database(rolas = rolas ,
+                                             performers = performers,
+                                             albums = albums)
+    else :
+        data_access_object.create_database()
+        data_access_object.populate_database(rolas = rolas ,
+                                             performers = performers,
+                                             albums = albums)
