@@ -10,7 +10,7 @@ class Miner :
         self.rolas = {}
         self.performers = {}
         self.albums = {}
-        self.progress = 0.0
+        self.progress = 0
 
     def mine(self) :
         rola_count = 1
@@ -34,7 +34,7 @@ class Miner :
 
         for path in paths:
             processed_files += 1
-            self.progress = processed_files * 1.0 / total_files
+            self.progress = processed_files
 
             audio = ID3(path)
 

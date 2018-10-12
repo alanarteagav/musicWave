@@ -166,7 +166,7 @@ class MainWindowController:
         except:
             try:
                 artwork_data = file.tags['APIC:'].data
-                loader = GdkPixbuf.PixbufLoader.new_with_type('jpg')
+                loader = GdkPixbuf.PixbufLoader.new_with_type('JPG')
                 loader.set_size(120, 120)
                 loader.write(artwork_data)
                 loader.close()
