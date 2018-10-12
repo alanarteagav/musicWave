@@ -4,36 +4,88 @@ import data_manager
 import os
 import os.path
 import gi
-from gi.repository import Gtk, Gdk.PixbufLoader
+gi.require_version('Gtk', '3.0')
+gi.require_version('Gst', '1.0')
+from gi.repository import Gtk, GdkPixbuf
+from gi.repository import Gst
 import mutagen
 from mutagen.id3 import ID3
 
+
+
+def play_song(caller, tree_selection, PLAYER):
+    try:
+        (model, iter) = tree_selection.get_selected()
+        path = model.get_value(iter,4)
+    except:
+        return
+
+    if PLAYER[1] == False or PLAYER[2] != path:
+        PLAYER[2] = path
+        path = path.replace(" ", "\ ")
+        if PLAYER[0] != None:
+            PLAYER[0].set_state(Gst.State.NULL)
+        pipeline = "filesrc location=" + path + " ! decodebin ! audioconvert ! autoaudiosink"
+        player = Gst.parse_launch(pipeline)
+        PLAYER[0] = player
+        player.set_state(Gst.State.PLAYING)
+        PLAYER[1] = True
+    else :
+        PLAYER[0].set_state(Gst.State.PLAYING)
+
+
+def pause_song(caller, PLAYER):
+    try:
+        player = PLAYER[0]
+        player.set_state(Gst.State.PAUSED)
+    except:
+        pass
+
+#Hides an specific window
+def hide_window(window, event):
+    window.hide()
+    return True
+
+
+#Responds to a selected row in TreeView.
 def selection(tree_selection, title_label, album_label, performer_label, imageview) :
     (model, iter) = tree_selection.get_selected()
     title = model.get_value(iter,0)
     album = model.get_value(iter,1)
     performer = model.get_value(iter,2)
     path = model.get_value(iter,4)
-    print(path)
 
     title_label.set_text(title)
     album_label.set_text(album)
+    performer_label.set_text(performer)
 
     audio = ID3(path)
     file = mutagen.File(path)
-    artwork_data = file.tags['APIC:'].data
+    try:
+        artwork_data = file.tags['APIC:'].data
+        loader = GdkPixbuf.PixbufLoader.new()
+        loader.set_size(120, 120)
+        loader.write(artwork_data)
+        loader.close()
+        pixbuf = loader.get_pixbuf()
+        imageview.set_from_pixbuf(pixbuf)
+    except:
+        try:
+            artwork_data = file.tags['APIC:'].data
+            loader = GdkPixbuf.PixbufLoader.new_with_type('jpg')
+            loader.set_size(120, 120)
+            loader.write(artwork_data)
+            loader.close()
+            pixbuf = loader.get_pixbuf()
+            imageview.set_from_pixbuf(pixbuf)
+        except:
+            imageview.set_from_file("resources/music.png")
 
-    loader = Gdk.GdkPixbuf.PixbufLoader("jpeg")
-    loader.write(artwork_data)
-    loader.close()
-    pixbuf = loader.get_pixbuf()
-    imageview.set_from_pixbuf(pixbuf)
 
-
+#Mining process
 def mine(trigger, data_access_object, miner, treeview):
 
-
-    listmodel = Gtk.ListStore(str, str, str, str, path)
+    listmodel = Gtk.ListStore(str, str, str, str, str)
     rolas_representation = []
 
     if os.path.isfile("rolas.db"):
@@ -87,21 +139,35 @@ def mine(trigger, data_access_object, miner, treeview):
     treeview.set_model(listmodel)
 
 if __name__ == "__main__" :
-    gi.require_version('Gtk', '3.0')
+
+    PLAYER = []
+    PLAYER.append(None)
+    PLAYER.append(False)
+    PLAYER.append("")
+
+    #Initializes gstreamer
+    Gst.init(None)
+
+    #Gets the path to HOME/Music
     home = os.getenv("HOME")
     path = str(home + "/Music")
 
+    #The rolas representation for the TreeView
     rolas_representation = []
 
+    #Creates the miner
     miner_object = miner.Miner(path)
     miner_object.mine()
 
+    #Gets the information from the tags
     rolas = miner_object.get_rolas()
     albums = miner_object.get_albums()
     performers = miner_object.get_performers()
 
+    #Creates the DAO
     data_access_object = data_manager.Data_manager("", "rolas.db")
 
+    #Fills the database
     if os.path.isfile("rolas.db"):
         os.remove("rolas.db")
         data_access_object.create_database()
@@ -145,6 +211,11 @@ if __name__ == "__main__" :
 
     builder = Gtk.Builder()
     builder.add_from_file("resources/main.glade")
+    about_builder = Gtk.Builder()
+    about_builder.add_from_file("resources/about.glade")
+    about_dialog = about_builder.get_object("about_dialog")
+    about_dialog.connect("delete-event", hide_window)
+    about_dialog.connect("destroy", hide_window)
 
     columns = ["Title",
                "Album",
@@ -160,9 +231,9 @@ if __name__ == "__main__" :
 
     handlers = {
         "exit": Gtk.main_quit,
-        "mine": (mine, data_access_object, miner_object, treeview)
+        "mine": (mine, data_access_object, miner_object, treeview),
+        "about": (lambda widget : about_dialog.show())
     }
-
     builder.connect_signals(handlers)
 
 
@@ -172,6 +243,8 @@ if __name__ == "__main__" :
         # the column is created
         col = Gtk.TreeViewColumn(column, cell, text=i)
         # and it is appended to the treeview
+        if column == "Path":
+            col.set_visible(False)
         treeview.append_column(col)
 
     title_label = builder.get_object("title_label")
@@ -183,6 +256,16 @@ if __name__ == "__main__" :
     tree_selection = treeview.get_selection()
     tree_selection.set_mode(Gtk.SelectionMode.SINGLE)
     tree_selection.connect("changed", selection, title_label, album_label, performer_label, imageview)
+
+
+    play_button = builder.get_object("play_button")
+    play_button.connect("clicked", play_song, tree_selection, PLAYER)
+
+    pause_button = builder.get_object("pause_button")
+    pause_button.connect("clicked", pause_song, PLAYER)
+
+
+
 
     window = builder.get_object("main_window")
     window.show_all()

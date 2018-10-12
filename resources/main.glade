@@ -5,7 +5,7 @@
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="can_focus">False</property>
-    <property name="pixbuf">musicWave50.png</property>
+    <property name="pixbuf">play.png</property>
   </object>
   <object class="GtkImage" id="image3">
     <property name="visible">True</property>
@@ -17,6 +17,49 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <property name="pixbuf">tag.png</property>
+  </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">play.png</property>
+  </object>
+  <object class="GtkImage" id="image6">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <property name="pixbuf">pause.png</property>
+  </object>
+  <object class="GtkMenu" id="menu1">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <child>
+      <object class="GtkSeparatorMenuItem" id="menuitem2">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+      </object>
+    </child>
+    <child>
+      <object class="GtkMenuItem" id="about_item">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="label" translatable="yes">about</property>
+        <property name="use_underline">True</property>
+        <signal name="activate" handler="about" swapped="no"/>
+      </object>
+    </child>
+  </object>
+  <object class="GtkListStore" id="rolas_liststore">
+    <columns>
+      <!-- column-name songs -->
+      <column type="gchararray"/>
+      <!-- column-name artists -->
+      <column type="gchararray"/>
+      <!-- column-name albums -->
+      <column type="gchararray"/>
+      <!-- column-name genre -->
+      <column type="gchararray"/>
+      <!-- column-name path -->
+      <column type="gchararray"/>
+    </columns>
   </object>
   <object class="GtkWindow" id="main_window">
     <property name="width_request">800</property>
@@ -46,17 +89,19 @@
                 <property name="left_padding">15</property>
                 <property name="right_padding">10</property>
                 <child>
-                  <object class="GtkButton" id="musicWaveButton">
-                    <property name="width_request">30</property>
-                    <property name="height_request">30</property>
+                  <object class="GtkMenuButton" id="menubutton1">
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
-                    <property name="image">image2</property>
                     <property name="relief">none</property>
-                    <property name="focus_on_click">False</property>
-                    <property name="yalign">0.65999996662139893</property>
-                    <property name="always_show_image">True</property>
+                    <property name="popup">menu1</property>
+                    <child>
+                      <object class="GtkImage" id="image1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="pixbuf">musicWave50.png</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
@@ -70,6 +115,7 @@
               <object class="GtkAlignment" id="buttonAlignment2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Load music library</property>
                 <property name="top_padding">5</property>
                 <property name="bottom_padding">5</property>
                 <property name="left_padding">10</property>
@@ -96,6 +142,7 @@
               <object class="GtkAlignment" id="buttonAlignment4">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="tooltip_text" translatable="yes">Edit tags</property>
                 <property name="top_padding">5</property>
                 <property name="bottom_padding">5</property>
                 <property name="left_padding">10</property>
@@ -209,10 +256,11 @@
               <object class="GtkBox" id="box2">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
+                <property name="margin_left">7</property>
                 <child>
                   <object class="GtkImage" id="imageview">
-                    <property name="width_request">100</property>
-                    <property name="height_request">100</property>
+                    <property name="width_request">120</property>
+                    <property name="height_request">120</property>
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
                     <property name="pixbuf">music.png</property>
@@ -237,6 +285,14 @@
                         <property name="margin_top">7</property>
                         <property name="margin_bottom">7</property>
                         <property name="label" translatable="yes">Title</property>
+                        <property name="ellipsize">end</property>
+                        <property name="width_chars">50</property>
+                        <property name="max_width_chars">50</property>
+                        <property name="xalign">0</property>
+                        <attributes>
+                          <attribute name="font-desc" value="&lt;Enter Value&gt; 14"/>
+                          <attribute name="weight" value="light"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -248,9 +304,17 @@
                       <object class="GtkLabel" id="album_label">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_left">20</property>
                         <property name="margin_top">7</property>
                         <property name="margin_bottom">7</property>
                         <property name="label" translatable="yes">Album</property>
+                        <property name="ellipsize">start</property>
+                        <property name="width_chars">40</property>
+                        <property name="xalign">0</property>
+                        <attributes>
+                          <attribute name="font-desc" value="&lt;Enter Value&gt; 10"/>
+                          <attribute name="weight" value="semilight"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -262,9 +326,17 @@
                       <object class="GtkLabel" id="performer_label">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="margin_left">20</property>
                         <property name="margin_top">7</property>
                         <property name="margin_bottom">7</property>
                         <property name="label" translatable="yes">Performer</property>
+                        <property name="ellipsize">start</property>
+                        <property name="width_chars">40</property>
+                        <property name="xalign">0</property>
+                        <attributes>
+                          <attribute name="font-desc" value="&lt;Enter Value&gt; 10"/>
+                          <attribute name="weight" value="semilight"/>
+                        </attributes>
                       </object>
                       <packing>
                         <property name="expand">False</property>
@@ -280,13 +352,54 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
+                  <object class="GtkBox" id="box4">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkButton" id="play_button">
+                        <property name="height_request">0</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_left">6</property>
+                        <property name="margin_right">6</property>
+                        <property name="margin_top">34</property>
+                        <property name="margin_bottom">34</property>
+                        <property name="image">image2</property>
+                        <property name="relief">none</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">0</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkButton" id="pause_button">
+                        <property name="height_request">0</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">True</property>
+                        <property name="margin_top">34</property>
+                        <property name="margin_bottom">34</property>
+                        <property name="image">image6</property>
+                        <property name="relief">none</property>
+                      </object>
+                      <packing>
+                        <property name="expand">False</property>
+                        <property name="fill">True</property>
+                        <property name="position">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">2</property>
+                  </packing>
                 </child>
               </object>
             </child>
@@ -299,23 +412,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkMenu" id="menu1">
-    <property name="visible">True</property>
-    <property name="can_focus">False</property>
-  </object>
-  <object class="GtkListStore" id="rolas_liststore">
-    <columns>
-      <!-- column-name songs -->
-      <column type="gchararray"/>
-      <!-- column-name artists -->
-      <column type="gchararray"/>
-      <!-- column-name albums -->
-      <column type="gchararray"/>
-      <!-- column-name genre -->
-      <column type="gchararray"/>
-      <!-- column-name path -->
-      <column type="gchararray"/>
-    </columns>
   </object>
 </interface>

@@ -18,7 +18,9 @@ class Miner :
         artist_count = 1
 
         albums = {}
+        albums["Unknown"] = 0
         performers = {}
+        performers["Unknown"] = 0
         rolas = {}
         paths = []
 
