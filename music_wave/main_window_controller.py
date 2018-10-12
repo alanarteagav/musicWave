@@ -16,11 +16,19 @@ import mutagen
 from mutagen.id3 import ID3
 
 class MainWindowController:
+
+    data_list = []
+
     def __init__(self):
+
+        self.first_run = True
+        self.default_database = False
+
         home = os.getenv("HOME")
         path = str(home + "/Music")
         self.miner = miner.Miner(path)
         self.data_manager = data_manager.Data_manager("", "rolas.db")
+
         self.rolas_representation = []
         self.music_player = []
         self.music_player.append(None)
@@ -67,14 +75,18 @@ class MainWindowController:
         pause_button.connect("clicked", self.pause_song)
 
     def fetch_info(self):
-        self.loading_window.show()
-        self.data_manager.create_database()
-        self.data_manager.populate_database(rolas = self.rolas ,
-                                             performers = self.performers,
-                                             albums = self.albums)
+        if self.default_database:
+            self.default_database = False
+        else :
+            self.data_manager.create_database()
+            self.mine2()
+            self.data_manager.populate_database(rolas = self.rolas ,
+                                                performers = self.performers,
+                                                albums = self.albums)
         db_rolas = self.data_manager.get_rolas()
         db_albums = self.data_manager.get_albums()
         db_performers = self.data_manager.get_performers()
+        rolas_representation = []
         for rola in db_rolas.values():
             representation = []
             representation.append(rola.get_title().replace("´", "'"))
@@ -84,9 +96,11 @@ class MainWindowController:
                 self.data_manager.get_performer(rola.get_performer_id())[2])
             representation.append(rola.get_genre())
             representation.append(rola.get_path())
-            self.rolas_representation.append(representation)
-        print(hex(id(self.rolas_representation)))
-        self.loading_window.hide()
+            rolas_representation.append(representation)
+        if self.first_run:
+            self.data_list = rolas_representation
+        else:
+            return rolas_representation
 
     def play_song(self, caller):
         try:
@@ -162,44 +176,66 @@ class MainWindowController:
                 self.imageview.set_from_file("resources/music.png")
 
 
+    def create_image(self, loading_window):
+        loading_window.show()
+
+
+        def thread_run():
+            # call heavy here
+            heavy_ret = self.fetch_info()
+            GLib.idle_add(cleanup, heavy_ret)
+
+        def cleanup(heavy_ret):
+            loading_window.hide()
+            thread.join()
+            data_list = heavy_ret
+            listmodel = Gtk.ListStore(str, str, str, str, str)
+            for item in data_list :
+                listmodel.append(item)
+            self.treeview.set_model(listmodel)
+
+        # start "heavy" in a separate thread and immediately
+        # return to mainloop
+        thread = threading.Thread(target = thread_run)
+        thread.start()
+
     #Mining process
     def mine(self, caller):
-        listmodel = Gtk.ListStore(str, str, str, str, str)
-        self.rolas_representation = []
+
         if os.path.isfile("rolas.db"):
             os.remove("rolas.db")
-            self.fetch_info()
+            self.create_image(self.loading_window)
+
         else :
-            self.fetch_info()
-        for item in self.rolas_representation :
-            listmodel.append(item)
-        self.treeview.set_model(listmodel)
+            self.create_image(self.loading_window)
 
-    def start(self):
-        Gst.init(None)
+    def mine2(self):
         self.miner.mine()
-
-        #Gets the information from the tags
         self.rolas = self.miner.get_rolas()
         self.albums = self.miner.get_albums()
         self.performers = self.miner.get_performers()
 
-        self.main_window.show_all()
+    def storeList(self, func):
+        return func
 
-        print(hex(id(self.rolas_representation)))
+    def start(self):
+        Gst.init(None)
+        self.mine2()
+        self.main_window.show_all()
 
         #Fills the database
         if os.path.isfile("rolas.db"):
-            os.remove("rolas.db")
+            self.default_database = True
             self.fetch_info()
         else :
             self.fetch_info()
 
+        self.first_run = False
 
         self.about_window.connect("delete-event", self.hide_window)
         self.about_window.connect("destroy", self.hide_window)
 
-        for representation in self.rolas_representation:
+        for representation in self.data_list:
             self.liststore.append(representation)
 
         for index, column in enumerate(self.columns):
