@@ -15,301 +15,199 @@ from gi.repository import Gtk, GdkPixbuf, Gst, GLib
 import mutagen
 from mutagen.id3 import ID3
 
+class MainWindowController:
+    def __init__(self):
+        home = os.getenv("HOME")
+        path = str(home + "/Music")
+        self.miner = miner.Miner(path)
+        self.data_manager = data_manager.Data_manager("", "rolas.db")
+        self.rolas_representation = []
+        self.music_player = []
+        self.music_player.append(None)
+        self.music_player.append(False)
+        self.music_player.append("")
 
-def iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog):
-    loading_dialog.show()
-    data_access_object.create_database()
-    data_access_object.populate_database(rolas = rolas ,
-                                         performers = performers,
-                                         albums = albums)
-    db_rolas = data_access_object.get_rolas()
-    db_albums = data_access_object.get_albums()
-    db_performers = data_access_object.get_performers()
-    for rola in db_rolas.values():
-        representation = []
-        representation.append(rola.get_title())
-        representation.append(
-            data_access_object.get_album(rola.get_album_id())[2])
-        representation.append(
-            data_access_object.get_performer(rola.get_performer_id())[2])
-        representation.append(rola.get_genre())
-        representation.append(rola.get_path())
-        rolas_representation.append(representation)
-        print(rolas_representation)
-        yield True
-    loading_dialog.hide()
-    yield False
+        self.builder = Gtk.Builder()
+        self.builder.add_from_file("resources/main.glade")
+        self.main_window = self.builder.get_object("main_window")
+
+        self.liststore = self.builder.get_object("liststore")
+        self.treeview = self.builder.get_object("treeview")
+
+        self.title_label = self.builder.get_object("title_label")
+        self.album_label = self.builder.get_object("album_label")
+        self.performer_label = self.builder.get_object("performer_label")
+        self.imageview = self.builder.get_object("imageview")
+
+        loading_builder = Gtk.Builder()
+        loading_builder.add_from_file("resources/loading.glade")
+        self.loading_window = loading_builder.get_object("loading_window")
+
+        about_builder = Gtk.Builder()
+        about_builder.add_from_file("resources/about.glade")
+        self.about_window = about_builder.get_object("about_window")
+
+        self.columns = ["Title", "Album", "Performer", "Genre", "Path"]
+
+        handlers = {
+            "exit": Gtk.main_quit,
+            "mine": (self.mine),
+            "about": (lambda widget : self.about_window.show())
+        }
+        self.builder.connect_signals(handlers)
+
+        self.tree_selection = self.treeview.get_selection()
+        self.tree_selection.set_mode(Gtk.SelectionMode.SINGLE)
+        self.tree_selection.connect("changed", self.on_select_row)
+
+        play_button = self.builder.get_object("play_button")
+        play_button.connect("clicked", self.play_song)
+
+        pause_button = self.builder.get_object("pause_button")
+        pause_button.connect("clicked", self.pause_song)
+
+    def fetch_info(self):
+        self.loading_window.show()
+        self.data_manager.create_database()
+        self.data_manager.populate_database(rolas = self.rolas ,
+                                             performers = self.performers,
+                                             albums = self.albums)
+        db_rolas = self.data_manager.get_rolas()
+        db_albums = self.data_manager.get_albums()
+        db_performers = self.data_manager.get_performers()
+        for rola in db_rolas.values():
+            representation = []
+            representation.append(rola.get_title().replace("´", "'"))
+            representation.append(
+                self.data_manager.get_album(rola.get_album_id())[2])
+            representation.append(
+                self.data_manager.get_performer(rola.get_performer_id())[2])
+            representation.append(rola.get_genre())
+            representation.append(rola.get_path())
+            self.rolas_representation.append(representation)
+        print(hex(id(self.rolas_representation)))
+        self.loading_window.hide()
+
+    def play_song(self, caller):
+        try:
+            (model, iter) = self.tree_selection.get_selected()
+            path = model.get_value(iter,4)
+        except:
+            return
+
+        if self.music_player[1] == False or self.music_player[2] != path:
+            self.music_player[2] = path
+            path = path.replace(" ", "\ ")
+            if self.music_player[0] != None:
+                self.music_player[0].set_state(Gst.State.NULL)
+            pipeline = "filesrc location=" + path + " ! decodebin ! audioconvert ! autoaudiosink"
+            player = Gst.parse_launch(pipeline)
+            self.music_player[0] = player
+            player.set_state(Gst.State.PLAYING)
+            self.music_player[1] = True
+        else :
+            self.music_player[0].set_state(Gst.State.PLAYING)
 
 
-def play_song(caller, tree_selection, PLAYER):
-    try:
-        (model, iter) = tree_selection.get_selected()
-        path = model.get_value(iter,4)
-    except:
-        return
+    def pause_song(self, caller):
+        try:
+            player = self.music_player[0]
+            player.set_state(Gst.State.PAUSED)
+        except:
+            pass
 
-    if PLAYER[1] == False or PLAYER[2] != path:
-        PLAYER[2] = path
-        path = path.replace(" ", "\ ")
-        if PLAYER[0] != None:
-            PLAYER[0].set_state(Gst.State.NULL)
-        pipeline = "filesrc location=" + path + " ! decodebin ! audioconvert ! autoaudiosink"
-        player = Gst.parse_launch(pipeline)
-        PLAYER[0] = player
-        player.set_state(Gst.State.PLAYING)
-        PLAYER[1] = True
-    else :
-        PLAYER[0].set_state(Gst.State.PLAYING)
+    #Hides an specific window
+    def hide_window(self, window, event):
+        window.hide()
+        return True
 
 
-def pause_song(caller, PLAYER):
-    try:
-        player = PLAYER[0]
-        player.set_state(Gst.State.PAUSED)
-    except:
-        pass
+    #Responds to a selected row in TreeView.
+    def on_select_row(self, caller) :
+        try:
+            (model, iter) = self.tree_selection.get_selected()
+            self.play_song(caller)
 
-#Hides an specific window
-def hide_window(window, event):
-    window.hide()
-    return True
+            title = model.get_value(iter,0)
+            album = model.get_value(iter,1)
+            performer = model.get_value(iter,2)
+            path = model.get_value(iter,4)
 
+            self.title_label.set_text(title)
+            self.album_label.set_text(album)
+            self.performer_label.set_text(performer)
 
-#Responds to a selected row in TreeView.
-def selection(tree_selection, title_label, album_label, performer_label, imageview) :
-    (model, iter) = tree_selection.get_selected()
-    title = model.get_value(iter,0)
-    album = model.get_value(iter,1)
-    performer = model.get_value(iter,2)
-    path = model.get_value(iter,4)
-
-    title_label.set_text(title)
-    album_label.set_text(album)
-    performer_label.set_text(performer)
-
-    audio = ID3(path)
-    file = mutagen.File(path)
-    try:
-        artwork_data = file.tags['APIC:'].data
-        loader = GdkPixbuf.PixbufLoader.new()
-        loader.set_size(120, 120)
-        loader.write(artwork_data)
-        loader.close()
-        pixbuf = loader.get_pixbuf()
-        imageview.set_from_pixbuf(pixbuf)
-    except:
+            audio = ID3(path)
+            file = mutagen.File(path)
+        except :
+            return
         try:
             artwork_data = file.tags['APIC:'].data
-            loader = GdkPixbuf.PixbufLoader.new_with_type('jpg')
+            loader = GdkPixbuf.PixbufLoader.new()
             loader.set_size(120, 120)
             loader.write(artwork_data)
             loader.close()
             pixbuf = loader.get_pixbuf()
-            imageview.set_from_pixbuf(pixbuf)
+            self.imageview.set_from_pixbuf(pixbuf)
         except:
-            imageview.set_from_file("resources/music.png")
+            try:
+                artwork_data = file.tags['APIC:'].data
+                loader = GdkPixbuf.PixbufLoader.new_with_type('jpg')
+                loader.set_size(120, 120)
+                loader.write(artwork_data)
+                loader.close()
+                pixbuf = loader.get_pixbuf()
+                self.imageview.set_from_pixbuf(pixbuf)
+            except:
+                self.imageview.set_from_file("resources/music.png")
 
 
-#Mining process
-def mine(trigger, data_access_object, miner, treeview, loading_dialog):
+    #Mining process
+    def mine(self, caller):
+        listmodel = Gtk.ListStore(str, str, str, str, str)
+        self.rolas_representation = []
+        if os.path.isfile("rolas.db"):
+            os.remove("rolas.db")
+            self.fetch_info()
+        else :
+            self.fetch_info()
+        for item in self.rolas_representation :
+            listmodel.append(item)
+        self.treeview.set_model(listmodel)
 
-    listmodel = Gtk.ListStore(str, str, str, str, str)
-    rolas_representation = []
-    if os.path.isfile("rolas.db"):
-        os.remove("rolas.db")
+    def start(self):
+        Gst.init(None)
+        self.miner.mine()
 
-        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
-        GLib.idle_add(task.__next__)
-    else :
-        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
-        GLib.idle_add(task.__next__)
-    for item in rolas_representation :
-        listmodel.append(item)
-    treeview.set_model(listmodel)
+        #Gets the information from the tags
+        self.rolas = self.miner.get_rolas()
+        self.albums = self.miner.get_albums()
+        self.performers = self.miner.get_performers()
 
+        self.main_window.show_all()
 
-if __name__ == "__main__" :
+        print(hex(id(self.rolas_representation)))
 
-    PLAYER = []
-    PLAYER.append(None)
-    PLAYER.append(False)
-    PLAYER.append("")
-
-    #Initializes gstreamer
-    Gst.init(None)
-
-    #Gets the path to HOME/Music
-    home = os.getenv("HOME")
-    path = str(home + "/Music")
-
-    #The rolas representation for the TreeView
-    rolas_representation = []
-
-    #Creates the miner
-    miner_object = miner.Miner(path)
-    miner_object.mine()
-
-    #Gets the information from the tags
-    rolas = miner_object.get_rolas()
-    albums = miner_object.get_albums()
-    performers = miner_object.get_performers()
-
-    #Creates the DAO
-    data_access_object = data_manager.Data_manager("", "rolas.db")
+        #Fills the database
+        if os.path.isfile("rolas.db"):
+            os.remove("rolas.db")
+            self.fetch_info()
+        else :
+            self.fetch_info()
 
 
-    builder = Gtk.Builder()
-    builder.add_from_file("resources/main.glade")
+        self.about_window.connect("delete-event", self.hide_window)
+        self.about_window.connect("destroy", self.hide_window)
 
+        for representation in self.rolas_representation:
+            self.liststore.append(representation)
 
-    window = builder.get_object("main_window")
-    window.show_all()
-
-    #Gets the loading dialog.
-    loading_builder = Gtk.Builder()
-    loading_builder.add_from_file("resources/loading.glade")
-    loading_builder.add_from_file("resources/loading.glade")
-    loading_dialog = loading_builder.get_object("loading_dialog")
-
-    #Fills the database
-    if os.path.isfile("rolas.db"):
-        os.remove("rolas.db")
-        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
-        GLib.idle_add(task.__next__)
-    else :
-        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
-        GLib.idle_add(task.__next__)
-
-
-    about_builder = Gtk.Builder()
-    about_builder.add_from_file("resources/about.glade")
-    about_dialog = about_builder.get_object("about_dialog")
-    about_dialog.connect("delete-event", hide_window)
-    about_dialog.connect("destroy", hide_window)
-
-    columns = ["Title",
-               "Album",
-               "Performer",
-               "Genre",
-               "Path"]
-
-    rolas_liststore = builder.get_object("rolas_liststore")
-    for element in rolas_representation:
-        rolas_liststore.append(element)
-
-    treeview = builder.get_object("treeview")
-
-    handlers = {
-        "exit": Gtk.main_quit,
-        "mine": (mine, data_access_object, miner_object, treeview, loading_dialog),
-        "about": (lambda widget : about_dialog.show())
-    }
-    builder.connect_signals(handlers)
-
-
-    for i, column in enumerate(columns):
-        # cellrenderer to render the text
-        cell = Gtk.CellRendererText()
-        # the column is created
-        col = Gtk.TreeViewColumn(column, cell, text=i)
-        # and it is appended to the treeview
-        if column == "Path":
-            col.set_visible(False)
-        treeview.append_column(col)
-
-    title_label = builder.get_object("title_label")
-    album_label = builder.get_object("album_label")
-    performer_label = builder.get_object("performer_label")
-    imageview = builder.get_object("imageview")
-
-
-    tree_selection = treeview.get_selection()
-    tree_selection.set_mode(Gtk.SelectionMode.SINGLE)
-    tree_selection.connect("changed", selection, title_label, album_label, performer_label, imageview)
-
-
-    play_button = builder.get_object("play_button")
-    play_button.connect("clicked", play_song, tree_selection, PLAYER)
-
-    pause_button = builder.get_object("pause_button")
-    pause_button.connect("clicked", pause_song, PLAYER)
-
-
-
-    Gtk.main()
-
-
-
-
-
-
-
-'''
-
-    from gi.repository import Pango
-import sys
-
-
-
-
-class MyWindow(Gtk.ApplicationWindow):
-
-    def __init__(self, app):
-        Gtk.Window.__init__(self, title="My Phone Book", application=app)
-        self.set_default_size(250, 100)
-        self.set_border_width(10)
-
-        # for each column
-        for i, column in enumerate(columns):
+        for index, column in enumerate(self.columns):
             # cellrenderer to render the text
             cell = Gtk.CellRendererText()
-            # the text in the first column should be in boldface
-            if i == 0:
-                cell.props.weight_set = True
-                cell.props.weight = Pango.Weight.BOLD
             # the column is created
-            col = Gtk.TreeViewColumn(column, cell, text=i)
+            col = Gtk.TreeViewColumn(column, cell, text=index)
             # and it is appended to the treeview
-            view.append_column(col)
-
-        # when a row is selected, it emits a signal
-        view.get_selection().connect("changed", self.on_changed)
-
-        # the label we use to show the selection
-        self.label = Gtk.Label()
-        self.label.set_text("")
-
-        # a grid to attach the widgets
-        grid = Gtk.Grid()
-        grid.attach(view, 0, 0, 1, 1)
-        grid.attach(self.label, 0, 1, 1, 1)
-
-        # attach the grid to the window
-        self.add(grid)
-
-    def on_changed(self, selection):
-        # get the model and the iterator that points at the data in the model
-        (model, iter) = selection.get_selected()
-        # set the label to a new value depending on the selection
-        self.label.set_text("\n %s %s %s" %
-                            (model[iter][0],  model[iter][1], model[iter][2]))
-        return True
-
-
-class MyApplication(Gtk.Application):
-
-    def __init__(self):
-        Gtk.Application.__init__(self)
-
-    def do_activate(self):
-        win = MyWindow(self)
-        win.show_all()
-
-    def do_startup(self):
-        Gtk.Application.do_startup(self)
-
-app = MyApplication()
-exit_status = app.run(sys.argv)
-sys.exit(exit_status)
-
-'''
+            if column == "Path":
+                col.set_visible(False)
+            self.treeview.append_column(col)
