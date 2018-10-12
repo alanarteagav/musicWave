@@ -1,16 +1,44 @@
-import rola
-import miner
-import data_manager
 import os
 import os.path
+import threading
+import time
+
+import data_manager
+import miner
+import rola
+
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
-from gi.repository import Gtk, GdkPixbuf
-from gi.repository import Gst
+from gi.repository import Gtk, GdkPixbuf, Gst, GLib
+
 import mutagen
 from mutagen.id3 import ID3
 
+
+def iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog):
+    loading_dialog.show()
+    data_access_object.create_database()
+    data_access_object.populate_database(rolas = rolas ,
+                                         performers = performers,
+                                         albums = albums)
+    db_rolas = data_access_object.get_rolas()
+    db_albums = data_access_object.get_albums()
+    db_performers = data_access_object.get_performers()
+    for rola in db_rolas.values():
+        representation = []
+        representation.append(rola.get_title())
+        representation.append(
+            data_access_object.get_album(rola.get_album_id())[2])
+        representation.append(
+            data_access_object.get_performer(rola.get_performer_id())[2])
+        representation.append(rola.get_genre())
+        representation.append(rola.get_path())
+        rolas_representation.append(representation)
+        print(rolas_representation)
+        yield True
+    loading_dialog.hide()
+    yield False
 
 
 def play_song(caller, tree_selection, PLAYER):
@@ -83,60 +111,22 @@ def selection(tree_selection, title_label, album_label, performer_label, imagevi
 
 
 #Mining process
-def mine(trigger, data_access_object, miner, treeview):
+def mine(trigger, data_access_object, miner, treeview, loading_dialog):
 
     listmodel = Gtk.ListStore(str, str, str, str, str)
     rolas_representation = []
-
     if os.path.isfile("rolas.db"):
         os.remove("rolas.db")
-        data_access_object.create_database()
-        miner_object.mine()
-        rolas = miner_object.get_rolas()
-        albums = miner_object.get_albums()
-        performers = miner_object.get_performers()
-        data_access_object.populate_database(rolas = rolas ,
-                                             performers = performers,
-                                             albums = albums)
-        db_rolas = data_access_object.get_rolas()
-        db_albums = data_access_object.get_albums()
-        db_performers = data_access_object.get_performers()
-        for rola in db_rolas.values():
-            representation = []
-            representation.append(rola.get_title())
-            representation.append(
-                data_access_object.get_album(rola.get_album_id())[2])
-            representation.append(
-                data_access_object.get_performer(rola.get_performer_id())[2])
-            representation.append(rola.get_genre())
-            representation.append(rola.get_path())
-            rolas_representation.append(representation)
 
+        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
+        GLib.idle_add(task.__next__)
     else :
-        data_access_object.create_database()
-        miner_object.mine()
-        rolas = miner_object.get_rolas()
-        albums = miner_object.get_albums()
-        performers = miner_object.get_performers()
-        data_access_object.populate_database(rolas = rolas ,
-                                             performers = performers,
-                                             albums = albums)
-        db_rolas = data_access_object.get_rolas()
-        db_albums = data_access_object.get_albums()
-        db_performers = data_access_object.get_performers()
-        for rola in db_rolas.values():
-            representation = []
-            representation.append(rola.get_title())
-            representation.append(
-                data_access_object.get_album(rola.get_album_id())[2])
-            representation.append(
-                data_access_object.get_performer(rola.get_performer_id())[2])
-            representation.append(rola.get_genre())
-            representation.append(rola.get_path())
-            rolas_representation.append(representation)
+        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
+        GLib.idle_add(task.__next__)
     for item in rolas_representation :
         listmodel.append(item)
     treeview.set_model(listmodel)
+
 
 if __name__ == "__main__" :
 
@@ -167,50 +157,30 @@ if __name__ == "__main__" :
     #Creates the DAO
     data_access_object = data_manager.Data_manager("", "rolas.db")
 
-    #Fills the database
-    if os.path.isfile("rolas.db"):
-        os.remove("rolas.db")
-        data_access_object.create_database()
-        data_access_object.populate_database(rolas = rolas ,
-                                             performers = performers,
-                                             albums = albums)
-        db_rolas = data_access_object.get_rolas()
-        db_albums = data_access_object.get_albums()
-        db_performers = data_access_object.get_performers()
-        for rola in db_rolas.values():
-            representation = []
-            representation.append(rola.get_title())
-            representation.append(
-                data_access_object.get_album(rola.get_album_id())[2])
-            representation.append(
-                data_access_object.get_performer(rola.get_performer_id())[2])
-            representation.append(rola.get_genre())
-            representation.append(rola.get_path())
-            rolas_representation.append(representation)
-
-    else :
-        data_access_object.create_database()
-        data_access_object.populate_database(rolas = rolas ,
-                                             performers = performers,
-                                             albums = albums)
-        db_rolas = data_access_object.get_rolas()
-        db_albums = data_access_object.get_albums()
-        db_performers = data_access_object.get_performers()
-        for rola in db_rolas.values():
-            representation = []
-            representation.append(rola.get_title())
-            representation.append(
-                data_access_object.get_album(rola.get_album_id())[2])
-            representation.append(
-                data_access_object.get_performer(rola.get_performer_id())[2])
-            representation.append(rola.get_genre())
-            representation.append(rola.get_path())
-            rolas_representation.append(representation)
-
-
 
     builder = Gtk.Builder()
     builder.add_from_file("resources/main.glade")
+
+
+    window = builder.get_object("main_window")
+    window.show_all()
+
+    #Gets the loading dialog.
+    loading_builder = Gtk.Builder()
+    loading_builder.add_from_file("resources/loading.glade")
+    loading_builder.add_from_file("resources/loading.glade")
+    loading_dialog = loading_builder.get_object("loading_dialog")
+
+    #Fills the database
+    if os.path.isfile("rolas.db"):
+        os.remove("rolas.db")
+        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
+        GLib.idle_add(task.__next__)
+    else :
+        task = iterate_rolas(data_access_object, miner, rolas_representation, loading_dialog)
+        GLib.idle_add(task.__next__)
+
+
     about_builder = Gtk.Builder()
     about_builder.add_from_file("resources/about.glade")
     about_dialog = about_builder.get_object("about_dialog")
@@ -231,7 +201,7 @@ if __name__ == "__main__" :
 
     handlers = {
         "exit": Gtk.main_quit,
-        "mine": (mine, data_access_object, miner_object, treeview),
+        "mine": (mine, data_access_object, miner_object, treeview, loading_dialog),
         "about": (lambda widget : about_dialog.show())
     }
     builder.connect_signals(handlers)
@@ -264,11 +234,6 @@ if __name__ == "__main__" :
     pause_button = builder.get_object("pause_button")
     pause_button.connect("clicked", pause_song, PLAYER)
 
-
-
-
-    window = builder.get_object("main_window")
-    window.show_all()
 
 
     Gtk.main()
