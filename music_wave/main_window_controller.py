@@ -7,6 +7,8 @@ import data_manager
 import miner
 import rola
 
+import tag_window_controller
+
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gst', '1.0')
@@ -35,6 +37,8 @@ class MainWindowController:
         self.music_player.append(False)
         self.music_player.append("")
 
+        self.TagWindowController = tag_window_controller.TagWindowController()
+
         self.builder = Gtk.Builder()
         self.builder.add_from_file("resources/main.glade")
         self.main_window = self.builder.get_object("main_window")
@@ -50,17 +54,23 @@ class MainWindowController:
         loading_builder = Gtk.Builder()
         loading_builder.add_from_file("resources/loading.glade")
         self.loading_window = loading_builder.get_object("loading_window")
+        self.loading_label = loading_builder.get_object("loading_label")
 
         about_builder = Gtk.Builder()
         about_builder.add_from_file("resources/about.glade")
         self.about_window = about_builder.get_object("about_window")
+
+        tag_builder = Gtk.Builder()
+        tag_builder.add_from_file("resources/tag.glade")
+        self.tag_window = tag_builder.get_object("tag_window")
 
         self.columns = ["Title", "Album", "Performer", "Genre", "Path"]
 
         handlers = {
             "exit": Gtk.main_quit,
             "mine": (self.mine),
-            "about": (lambda widget : self.about_window.show())
+            "about": (lambda widget : self.about_window.show()),
+            "tag": (lambda widget : self.tag_window.show())
         }
         self.builder.connect_signals(handlers)
 
@@ -140,8 +150,6 @@ class MainWindowController:
     def on_select_row(self, caller) :
         try:
             (model, iter) = self.tree_selection.get_selected()
-            self.play_song(caller)
-
             title = model.get_value(iter,0)
             album = model.get_value(iter,1)
             performer = model.get_value(iter,2)
@@ -176,7 +184,7 @@ class MainWindowController:
                 self.imageview.set_from_file("resources/music.png")
 
 
-    def create_image(self, loading_window):
+    def load_music(self, loading_window):
         loading_window.show()
 
 
@@ -199,24 +207,47 @@ class MainWindowController:
         thread = threading.Thread(target = thread_run)
         thread.start()
 
+
+    def set_label_text(self, text):
+        self.loading_label.set_text(text)
+
     #Mining process
     def mine(self, caller):
 
         if os.path.isfile("rolas.db"):
             os.remove("rolas.db")
-            self.create_image(self.loading_window)
+            self.load_music(self.loading_window)
 
         else :
-            self.create_image(self.loading_window)
+            self.load_music(self.loading_window)
 
     def mine2(self):
-        self.miner.mine()
+        self.miner.setup()
+        self.miner.walk()
+        for path in self.miner.get_paths():
+            self.miner.mine(path)
+            GLib.idle_add(self.set_label_text,
+                          (str(self.miner.get_progress()) + " / " +
+                           str(self.miner.get_total_files()) ))
+        GLib.idle_add(self.set_label_text, "Loading music ...")
         self.rolas = self.miner.get_rolas()
         self.albums = self.miner.get_albums()
         self.performers = self.miner.get_performers()
 
-    def storeList(self, func):
-        return func
+    def trigger_tag_window(self):
+        try:
+            (model, iter) = self.tree_selection.get_selected()
+            title = model.get_value(iter,0)
+
+
+            self.title_label.set_text(title)
+            self.album_label.set_text(album)
+            self.performer_label.set_text(performer)
+
+            audio = ID3(path)
+            file = mutagen.File(path)
+        except :
+            return
 
     def start(self):
         Gst.init(None)
@@ -234,6 +265,9 @@ class MainWindowController:
 
         self.about_window.connect("delete-event", self.hide_window)
         self.about_window.connect("destroy", self.hide_window)
+
+        self.tag_window.connect("delete-event", self.hide_window)
+        self.tag_window.connect("destroy", self.hide_window)
 
         for representation in self.data_list:
             self.liststore.append(representation)

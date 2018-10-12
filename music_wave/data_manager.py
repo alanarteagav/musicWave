@@ -151,7 +151,12 @@ class Data_manager :
         return album
 
     def get_rola(self, id):
-        pass
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM rolas WHERE id_rola = ?", [id])
+        rola = cursor.fetchone()
+        connection.close()
+        return rola
 
     def insert_performers(self, performers):
         connection = sqlite3.connect(self.directory + self.database_name)
