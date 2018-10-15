@@ -37,7 +37,7 @@ class MainWindowController:
         self.music_player.append(False)
         self.music_player.append("")
 
-        self.TagWindowController = tag_window_controller.TagWindowController()
+        self.tag_window_controller = tag_window_controller.TagWindowController()
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file("resources/main.glade")
@@ -62,15 +62,14 @@ class MainWindowController:
 
         tag_builder = Gtk.Builder()
         tag_builder.add_from_file("resources/tag.glade")
-        self.tag_window = tag_builder.get_object("tag_window")
 
-        self.columns = ["Title", "Album", "Performer", "Genre", "Path"]
+        self.columns = ["Title", "Album", "Performer", "Genre", "Path", 0]
 
         handlers = {
             "exit": Gtk.main_quit,
             "mine": (self.mine),
             "about": (lambda widget : self.about_window.show()),
-            "tag": (lambda widget : self.tag_window.show())
+            "tag": (lambda widget : self.trigger_tag_window())
         }
         self.builder.connect_signals(handlers)
 
@@ -106,6 +105,7 @@ class MainWindowController:
                 self.data_manager.get_performer(rola.get_performer_id())[2])
             representation.append(rola.get_genre())
             representation.append(rola.get_path())
+            representation.append(rola.get_id())
             rolas_representation.append(representation)
         if self.first_run:
             self.data_list = rolas_representation
@@ -143,6 +143,10 @@ class MainWindowController:
     #Hides an specific window
     def hide_window(self, window, event):
         window.hide()
+        return True
+
+    def close_window(self, window, event):
+        window.close()
         return True
 
 
@@ -197,7 +201,7 @@ class MainWindowController:
             loading_window.hide()
             thread.join()
             data_list = heavy_ret
-            listmodel = Gtk.ListStore(str, str, str, str, str)
+            listmodel = Gtk.ListStore(str, str, str, str, str, int)
             for item in data_list :
                 listmodel.append(item)
             self.treeview.set_model(listmodel)
@@ -235,19 +239,18 @@ class MainWindowController:
         self.performers = self.miner.get_performers()
 
     def trigger_tag_window(self):
-        try:
             (model, iter) = self.tree_selection.get_selected()
-            title = model.get_value(iter,0)
-
-
-            self.title_label.set_text(title)
-            self.album_label.set_text(album)
-            self.performer_label.set_text(performer)
-
-            audio = ID3(path)
-            file = mutagen.File(path)
-        except :
-            return
+            id = model.get_value(iter,5)
+            rola = self.data_manager.get_rola(id)
+            title = rola[4]
+            track = str(rola[5])
+            year = str(rola[6])
+            genre = rola[7]
+            self.tag_window_controller.set_title_entry_text(title)
+            self.tag_window_controller.set_track_entry_text(track)
+            self.tag_window_controller.set_year_entry_text(year)
+            self.tag_window_controller.set_genre_entry_text(genre)
+            self.tag_window_controller.show_window()
 
     def start(self):
         Gst.init(None)
@@ -266,9 +269,6 @@ class MainWindowController:
         self.about_window.connect("delete-event", self.hide_window)
         self.about_window.connect("destroy", self.hide_window)
 
-        self.tag_window.connect("delete-event", self.hide_window)
-        self.tag_window.connect("destroy", self.hide_window)
-
         for representation in self.data_list:
             self.liststore.append(representation)
 
@@ -278,6 +278,6 @@ class MainWindowController:
             # the column is created
             col = Gtk.TreeViewColumn(column, cell, text=index)
             # and it is appended to the treeview
-            if column == "Path":
+            if column == "Path" or column == 0:
                 col.set_visible(False)
             self.treeview.append_column(col)
