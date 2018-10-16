@@ -1,15 +1,8 @@
-if __name__ == '__main__':
-    if __package__ is None:
-        import sys
-        from os import path
-        sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
-        from music_wave.data_manager import Data_manager
-        from music_wave.rola import Rola
-    else:
-        from ..music_wave.data_manager import Data_manager
-        from ..music_wave.rola import Rola
+from music_wave.data_manager import DataManager
+from music_wave.rola import Rola
 
 import os
+from os import path
 import unittest
 import sqlite3
 from sqlite3 import Error
@@ -17,7 +10,7 @@ from sqlite3 import Error
 class TestCreateDatabase(unittest.TestCase):
 
     def setUp(self):
-        self.data_manager = Data_manager(directory="", database_name="test.db")
+        self.data_manager = DataManager(directory="", database_name="test.db")
 
     def tearDown(self):
         os.remove("test.db")
@@ -78,7 +71,7 @@ class TestPopulateDatabase(unittest.TestCase):
 
     def setUp(self):
         self.path = str(path.dirname(path.dirname(path.abspath(__file__))))
-        self.data_manager = Data_manager(directory="", database_name="test.db")
+        self.data_manager = DataManager(directory="", database_name="test.db")
 
     def tearDown(self):
         os.remove("test.db")
