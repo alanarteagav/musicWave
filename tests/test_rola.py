@@ -1,11 +1,4 @@
-if __name__ == '__main__':
-    if __package__ is None:
-        import sys
-        from os import path
-        sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-        from music_wave.rola import Rola
-    else:
-        from ..music_wave.rola import Rola
+from music_wave.rola import Rola
 
 import unittest
 
@@ -15,9 +8,6 @@ class TestRola(unittest.TestCase):
         self.rola_test = Rola(id = 0, performer_id = 0, album_id = 0,
                             path = 'null', title = 'null', track = 0,
                             year = 0, genre = 'null')
-
-    def setDown(self):
-        pass
 
     def test_set_get_id(self):
         self.assertEqual(self.rola_test.get_id(), 0, 'get id fail')
