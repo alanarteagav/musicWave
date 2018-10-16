@@ -21,7 +21,8 @@ class TestMiner(unittest.TestCase):
                         'Performers startup fail')
         self.assertEqual({'Unknown': 0}, self.miner.get_albums(),
                         'Albums startup fail')
-        self.assertEqual(0, self.miner.get_progress(), 'Progress startup fail')
+        self.assertEqual(0, self.miner.get_processed_files(),
+                        'Processed files startup fail')
         self.assertEqual(0, self.miner.get_total_files(),
                         'Total files startup fail')
         self.assertEqual([], self.miner.get_paths(), 'Paths startup fail')
