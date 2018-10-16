@@ -194,7 +194,7 @@ class MainWindowController:
         for path in self.miner.get_paths():
             self.miner.mine(path)
             GLib.idle_add(set_label_text,
-                          (str(self.miner.get_progress()) + " / " +
+                          (str(self.miner.get_processed_files()) + " / " +
                            str(self.miner.get_total_files()) ))
         GLib.idle_add(set_label_text, "Loading music ...")
         self.rolas = self.miner.get_rolas()
