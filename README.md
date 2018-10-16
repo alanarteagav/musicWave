@@ -1,4 +1,4 @@
-# ![musicWave Logo](resources/musicWave50.png) musicWave 
+# ![musicWave Logo](resources/musicWave50.png) musicWave
 System to create and manipulate a musical database.
 
 ## Python Version
@@ -17,11 +17,19 @@ link:
 ## Getting dependencies
 musicWave uses the following dependencies:
 
-- mp3_tagger
+- mutagen
 - PyGObject 3.30.1
 
 to install them, you should run the following commands in the terminal:
 ```
-pip3 install mp3-tagger
+pip3 install mutagen
 pip3 install PyGObject
+```
+## Running unit tests
+
+To run the project's unit test, you must run this command once you're in the
+musicWave project directory:
+
+```
+python3 -m setup.py test
 ```
