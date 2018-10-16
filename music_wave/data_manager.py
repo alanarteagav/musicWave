@@ -3,7 +3,7 @@ from sqlite3 import Error
 from .rola import Rola
 
 
-class Data_manager :
+class DataManager :
 
     def __init__(self, directory, database_name):
         self.directory = directory

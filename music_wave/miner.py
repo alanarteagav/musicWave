@@ -11,6 +11,12 @@ class Miner :
         self.performers = {}
         self.albums = {}
 
+    def setup(self):
+        pass
+
+    def walk(self):
+        pass
+
     def mine(self) :
         rola_count = 1
         album_count = 1
@@ -69,3 +75,6 @@ class Miner :
 
     def get_albums(self) :
         return self.albums
+
+    def get_paths(self):
+        return []
