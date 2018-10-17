@@ -216,6 +216,7 @@ class MainWindowController:
 
             audio = ID3(path)
             file = mutagen.File(path)
+            tags = mutagen.mp3.Open(path)
         except :
             return
         try:
@@ -228,13 +229,21 @@ class MainWindowController:
             self.imageview.set_from_pixbuf(pixbuf)
         except:
             try:
-                artwork_data = file.tags['APIC:'].data
-                loader = GdkPixbuf.PixbufLoader.new_with_type('JPG')
-                loader.set_size(120, 120)
-                loader.write(artwork_data)
-                loader.close()
-                pixbuf = loader.get_pixbuf()
-                self.imageview.set_from_pixbuf(pixbuf)
+                artwork_exists = False
+                for tag in tags:
+                    if tag.startswith("APIC"):
+                        artwork_data = tags[tag].data
+                        artwork_exists = True
+                        break
+                if artwork_exists:
+                    loader = GdkPixbuf.PixbufLoader.new()
+                    loader.set_size(120, 120)
+                    loader.write(artwork_data)
+                    loader.close()
+                    pixbuf = loader.get_pixbuf()
+                    self.imageview.set_from_pixbuf(pixbuf)
+                else:
+                    self.imageview.set_from_file("resources/music.png")
             except:
                 self.imageview.set_from_file("resources/music.png")
 
