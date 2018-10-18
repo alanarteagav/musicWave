@@ -331,7 +331,7 @@ class MainWindowController:
         year = album[3]
         self.album_window_controller.set_filter(self.filter)
         self.album_window_controller.set_name_entry_text(name)
-        self.album_window_controller.set_year_entry_text("2012")
+        self.album_window_controller.set_year_entry_text(str(year))
         self.album_window_controller.show_window()
 
     #Starts the Main Window Controller object.
