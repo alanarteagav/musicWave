@@ -284,6 +284,7 @@ class MainWindowController:
             (model, iter) = self.tree_selection.get_selected()
             id = model.get_value(iter,5)
             rola = self.data_manager.get_rola(id)
+            self.tag_window_controller.set_id(id)
             title = rola[4]
             track = str(rola[5])
             year = str(rola[6])
