@@ -206,9 +206,15 @@ class DataManager :
     def insert_performer(self, performer):
         pass
 
-    def insert_album(self, album):
-        pass
-        
+    def update_album(self, id, name, year):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('UPDATE albums \
+                        SET name = ? \
+                        WHERE id_album = ?' , (name, id))
+        connection.commit()
+        connection.close()
+
     def update_rola(self, id, title, track, year, genre):
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
