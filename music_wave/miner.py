@@ -38,7 +38,7 @@ class Miner :
         self.artist_count = 1
 
         self.albums = {}
-        self.albums["Unknown"] = 0
+        self.albums["Unknown"] = (0, 0)
         self.performers = {}
         self.performers["Unknown"] = 0
         self.rolas = {}
@@ -67,14 +67,21 @@ class Miner :
         except:
             pass
 
+        try:
+            year_tag = audio['TDRC'].text[0]
+            year_tag = str(year_tag)
+            year = int(year_tag)
+        except:
+            year = 2018
+
         album_id = 0
         try:
             album = audio['TALB'].text[0]
             if album != [] :
                 if str(album) in self.albums.keys() :
-                    album_id = self.albums[str(album)]
+                    album_id = self.albums[str(album)][0]
                 else :
-                    self.albums[str(album)] = self.album_count
+                    self.albums[str(album)] = (self.album_count, year)
                     album_id = self.album_count
                     self.album_count += 1
         except:
@@ -91,12 +98,6 @@ class Miner :
             track = int(track_tag.split("/")[0])
         except:
             track = 0
-
-        try:
-            year_tag = audio['TDRC'].text[0]
-            year = int(year_tag)
-        except:
-            year = 2018
 
         try:
             genre = audio['TCON'].text[0]
