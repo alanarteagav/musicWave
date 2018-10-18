@@ -13,6 +13,9 @@ from .search_compiler import SearchCompiler
 from .rola import Rola
 #imports tag window controller
 from .tag_window_controller import TagWindowController
+from .rola import Rola
+#imports album window controller
+from .album_window_controller import AlbumWindowController
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -48,6 +51,7 @@ class MainWindowController:
         self.music_player.append("")
 
         self.tag_window_controller = TagWindowController()
+        self.album_window_controller = AlbumWindowController()
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file("resources/main.glade")
@@ -84,6 +88,7 @@ class MainWindowController:
             "mine": (self.on_load_button_clicked),
             "about": (lambda widget : self.about_window.show()),
             "tag": (lambda widget : self.trigger_tag_window()),
+            "album": (lambda widget : self.trigger_album_window()),
             "search" : (self.on_search_entry_activated)
         }
         self.builder.connect_signals(handlers)
@@ -180,6 +185,9 @@ class MainWindowController:
             self.filter = listmodel.filter_new()
             self.filter.set_visible_func(self.search_filter_func)
             self.treeview.set_model(self.filter)
+
+            #for row in self.filter:
+            #    row[2] = "alb"
 
         thread = threading.Thread(target = thread_run)
         thread.start()
@@ -306,6 +314,25 @@ class MainWindowController:
         self.tag_window_controller.show_window()
 
         #self.tag_window_controller.set_lambda(lambda : self.run_load_music_task(self.loading_window))
+
+
+    #Launches an tag editro window, with the selected row info from the treeview
+    def trigger_album_window(self):
+        (model, iter) = self.tree_selection.get_selected()
+
+        album_name = model.get_value(iter, 1)
+        id = model.get_value(iter,5)
+        rola = self.data_manager.get_rola(id)
+        album_id = rola[2]
+        self.album_window_controller.set_id(album_id)
+        self.album_window_controller.set_old_name(album_name)
+        album = self.data_manager.get_album(album_id)
+        name = album[2]
+        year = album[3]
+        self.album_window_controller.set_filter(self.filter)
+        self.album_window_controller.set_name_entry_text(name)
+        self.album_window_controller.set_year_entry_text("2012")
+        self.album_window_controller.show_window()
 
     #Starts the Main Window Controller object.
     def start(self):
