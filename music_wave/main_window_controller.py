@@ -304,7 +304,6 @@ class MainWindowController:
         self.tag_window_controller.set_year_entry_text(year)
         self.tag_window_controller.set_genre_entry_text(genre)
         self.tag_window_controller.show_window()
-        self.read_from_database_activated = True
 
         #self.tag_window_controller.set_lambda(lambda : self.run_load_music_task(self.loading_window))
 
