@@ -77,9 +77,9 @@ class DataManager :
         for performer, performer_id in performers.items():
             cursor.execute('INSERT INTO performers (id_performer, id_type, name) \
                             VALUES (?, ?, ?)', (performer_id, 2, performer))
-        for album, album_id in albums.items():
+        for album, album_value in albums.items():
             cursor.execute('INSERT INTO albums ( id_album, name, year) \
-                            VALUES (?, ?, ?)', (album_id, album, 2018))
+                            VALUES (?, ?, ?)', (album_value[0], album, album_value[1]))
         for id, rola in rolas.items():
             cursor.execute('INSERT INTO rolas ( id_rola, id_performer, \
                                                 id_album, path, title, \
