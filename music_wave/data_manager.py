@@ -191,6 +191,18 @@ class DataManager :
         connection.commit()
         connection.close()
 
+    def execute_and_get_ids(self, command):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute(command)
+        identifiers_from_database = cursor.fetchall()
+        connection.close()
+        identifiers = []
+        if len(identifiers_from_database) != 0 :
+            for id in identifiers_from_database:
+                identifiers.append(id[0])
+        return identifiers
+
     def insert_performer(self, performer):
         pass
 
