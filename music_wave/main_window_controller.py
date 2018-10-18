@@ -281,21 +281,32 @@ class MainWindowController:
 
     #Launches an tag editro window, with the selected row info from the treeview
     def trigger_tag_window(self):
-            (model, iter) = self.tree_selection.get_selected()
-            id = model.get_value(iter,5)
-            rola = self.data_manager.get_rola(id)
-            self.tag_window_controller.set_id(id)
-            title = rola[4]
-            track = str(rola[5])
-            year = str(rola[6])
-            genre = rola[7]
-            self.tag_window_controller.set_title_entry_text(title)
-            self.tag_window_controller.set_track_entry_text(track)
-            self.tag_window_controller.set_year_entry_text(year)
-            self.tag_window_controller.set_genre_entry_text(genre)
-            self.tag_window_controller.show_window()
-            self.read_from_database_activated = True
-            self.tag_window_controller.set_lambda(lambda : self.run_load_music_task(self.loading_window))
+        (model, iter) = self.tree_selection.get_selected()
+
+        album = model.get_value(iter, 1)
+        performer = model.get_value(iter, 2)
+        path = model.get_value(iter, 4)
+        id = model.get_value(iter,5)
+
+        rola = self.data_manager.get_rola(id)
+        self.tag_window_controller.set_id(id)
+        self.tag_window_controller.set_album(album)
+        self.tag_window_controller.set_performer(performer)
+        self.tag_window_controller.set_path(path)
+        title = rola[4]
+        track = str(rola[5])
+        year = str(rola[6])
+        genre = rola[7]
+        self.tag_window_controller.set_treemodel(model)
+        self.tag_window_controller.set_treeiter(iter)
+        self.tag_window_controller.set_title_entry_text(title)
+        self.tag_window_controller.set_track_entry_text(track)
+        self.tag_window_controller.set_year_entry_text(year)
+        self.tag_window_controller.set_genre_entry_text(genre)
+        self.tag_window_controller.show_window()
+        self.read_from_database_activated = True
+
+        #self.tag_window_controller.set_lambda(lambda : self.run_load_music_task(self.loading_window))
 
     #Starts the Main Window Controller object.
     def start(self):
