@@ -7,6 +7,8 @@ import time
 from .data_manager import DataManager
 #imports the miner
 from .miner import Miner
+#imports the compiler for searchs inside the program
+from .search_compiler import SearchCompiler
 #imports rola class
 from .rola import Rola
 #imports tag window controller
@@ -37,6 +39,7 @@ class MainWindowController:
         path = str(home + "/Music")
         self.miner = Miner(path)
         self.data_manager = DataManager("", "rolas.db")
+        self.search_compiler = SearchCompiler()
 
         self.rolas_representation = []
         self.music_player = []
@@ -51,12 +54,16 @@ class MainWindowController:
         self.main_window = self.builder.get_object("main_window")
 
         self.liststore = self.builder.get_object("liststore")
+        self.filter = self.liststore.filter_new()
         self.treeview = self.builder.get_object("treeview")
+        self.treeview.set_model(self.filter)
 
         self.title_label = self.builder.get_object("title_label")
         self.album_label = self.builder.get_object("album_label")
         self.performer_label = self.builder.get_object("performer_label")
         self.imageview = self.builder.get_object("imageview")
+
+        self.searchentry = self.builder.get_object("searchentry")
 
         loading_builder = Gtk.Builder()
         loading_builder.add_from_file("resources/loading.glade")
@@ -76,7 +83,8 @@ class MainWindowController:
             "exit": Gtk.main_quit,
             "mine": (self.on_load_button_clicked),
             "about": (lambda widget : self.about_window.show()),
-            "tag": (lambda widget : self.trigger_tag_window())
+            "tag": (lambda widget : self.trigger_tag_window()),
+            "search" : (self.on_search_entry_activated)
         }
         self.builder.connect_signals(handlers)
 
@@ -89,6 +97,14 @@ class MainWindowController:
 
         pause_button = self.builder.get_object("pause_button")
         pause_button.connect("clicked", self.pause_song)
+
+        self.shown_rows = []
+
+    def search_filter_func(self, model, iter, data):
+        if self.shown_rows == [] :
+            return True
+        else:
+            return model[iter][5] in self.shown_rows
 
     #Method that hides an specific window received as argument
     def hide_window(self, window, event):
@@ -133,6 +149,19 @@ class MainWindowController:
         else :
             self.run_load_music_task(self.loading_window)
 
+    #Loads the music library when the "load" button is clicked
+    def on_search_entry_activated(self, caller):
+        search = self.searchentry.get_text()
+        if search == "":
+            self.shown_rows = []
+            self.filter.refilter()
+        else:
+            command = self.search_compiler.compile(search)
+            identifiers = self.data_manager.execute_and_get_ids(command)
+            self.shown_rows = identifiers
+            self.filter.refilter()
+            self.searchentry.set_text("")
+
     # Gets the music information, while shows an loading window
     def run_load_music_task(self, loading_window):
         loading_window.show()
@@ -148,7 +177,9 @@ class MainWindowController:
             listmodel = Gtk.ListStore(str, str, str, str, str, int)
             for item in rolas_representation_list :
                 listmodel.append(item)
-            self.treeview.set_model(listmodel)
+            self.filter = listmodel.filter_new()
+            self.filter.set_visible_func(self.search_filter_func)
+            self.treeview.set_model(self.filter)
 
         thread = threading.Thread(target = thread_run)
         thread.start()
@@ -200,6 +231,7 @@ class MainWindowController:
         self.rolas = self.miner.get_rolas()
         self.albums = self.miner.get_albums()
         self.performers = self.miner.get_performers()
+        self.search_compiler.update(self.performers, self.albums)
 
     #Responds to a selected row signal in TreeView.
     def on_selected_row(self, caller) :
