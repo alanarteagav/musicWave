@@ -33,7 +33,7 @@ class MainWindowController:
     #Main Window Controller constructor
     def __init__(self):
         self.first_run = True
-        self.default_database = False
+        self.read_from_database_activated = False
 
         home = os.getenv("HOME")
         path = str(home + "/Music")
@@ -187,8 +187,8 @@ class MainWindowController:
     # Retrieves the music info either only from the database or from both
     # the database and the miner object.
     def fetch_info(self):
-        if self.default_database:
-            self.default_database = False
+        if self.read_from_database_activated:
+            self.read_from_database_activated = False
         else :
             self.data_manager.create_database()
             self.mine()
@@ -294,6 +294,8 @@ class MainWindowController:
             self.tag_window_controller.set_year_entry_text(year)
             self.tag_window_controller.set_genre_entry_text(genre)
             self.tag_window_controller.show_window()
+            self.read_from_database_activated = True
+            self.tag_window_controller.set_lambda(lambda : self.run_load_music_task(self.loading_window))
 
     #Starts the Main Window Controller object.
     def start(self):
@@ -303,7 +305,7 @@ class MainWindowController:
 
         #Fills the database
         if os.path.isfile("rolas.db"):
-            self.default_database = True
+            self.read_from_database_activated = True
             self.run_load_music_task(self.loading_window)
         else :
             self.run_load_music_task(self.loading_window)
