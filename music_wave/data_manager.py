@@ -2,14 +2,25 @@ import sqlite3
 from sqlite3 import Error
 from music_wave.rola import Rola
 
-
 class DataManager :
+    """Data access object, used to interact with the program database,
+       and make queries and insertions in the database."""
 
     def __init__(self, directory, database_name):
+        """Class constructor, receives a directory in which the database will
+           be stored, and the name of the database file.
+
+           Parameters:
+
+           directory (str) : the directory of the database.
+
+           database_name (str) : the name of the database."""
         self.directory = directory
         self.database_name = database_name
 
     def create_database(self):
+        """Method that creates a database with the name and directory specified
+           in the constructor, it does not receive any parameter."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("""CREATE TABLE types (
@@ -71,6 +82,18 @@ class DataManager :
         connection.close()
 
     def populate_database(self, rolas, performers, albums):
+        """Method that receives rolas, performers and albums dictionaries
+           (obtained with the corresponding methods of the miner class),
+           and uses them to fill an existing database.
+
+           Parameters :
+
+           rolas ( dict {int : rola} ) : a dictionary of rolas.
+
+           performers ( dict { str : int } ) : a dictionary of performers.
+
+           albums ( dict { str : int } ) : a dictionary of albums."""
+
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
 
@@ -93,6 +116,10 @@ class DataManager :
         connection.close()
 
     def get_performers(self):
+        """Method that returns a dictionary of performers obtained from the
+           database.
+
+           Returns : a dictionary of performers ( dict { str : int} )"""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT performers.name, performers.id_performer \
@@ -106,6 +133,10 @@ class DataManager :
         return performers
 
     def get_persons(self):
+        """Method that returns a list of tuples of persons obtained from the
+           database.
+
+           Returns : list of tuples of persons"""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT persons.stage_name \
@@ -115,6 +146,10 @@ class DataManager :
         return persons
 
     def get_albums(self):
+        """Method that returns a dictionary of albums obtained from the
+           database.
+
+           Returns : a dictionary of albums ( dict { str : int} )"""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT albums.name, albums.id_album \
@@ -128,6 +163,10 @@ class DataManager :
         return albums
 
     def get_rolas(self):
+        """Method that returns a dictionary of rolas obtained from the
+           database.
+
+           Returns : a dictionary of rolas ( dict { int : rola} )"""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM rolas")
@@ -144,6 +183,10 @@ class DataManager :
         return rolas
 
     def get_performer(self, id):
+        """Method that returns a dictionary of rolas obtained from the
+           database.
+
+           Returns : a dictionary of rolas ( dict { int : rola} )"""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM performers WHERE id_performer = ?", [id])
@@ -152,6 +195,12 @@ class DataManager :
         return performer
 
     def get_album(self, id):
+        """Method that returns a tuple containing an specific album, given
+           its identifier.
+
+           Parameter: id (int) : the album identifier.
+
+           Returns : a tuple containing the album."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM albums WHERE id_album = ?", [id])
@@ -160,6 +209,12 @@ class DataManager :
         return album
 
     def get_rola(self, id):
+        """Method that returns a tuple containing an specific rola, given
+           its identifier.
+
+           Parameter: id (int) : the rola identifier.
+
+           Returns : a tuple containing the rola."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM rolas WHERE id_rola = ?", [id])
@@ -168,6 +223,12 @@ class DataManager :
         return rola
 
     def get_person(self, stage_name):
+        """Method that returns a tuple containing an specific person, given
+           its stage name.
+
+           Parameter: stage_name (str) : the person stage name.
+
+           Returns : a tuple containing the person."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM persons WHERE stage_name = ?", [stage_name])
@@ -176,6 +237,12 @@ class DataManager :
         return person
 
     def get_person_by_id(self, id_person):
+        """Method that returns a tuple containing an specific person, given
+           its identifier.
+
+           Parameter: id_person (int) : the person identifier.
+
+           Returns : a tuple containing the person."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM persons WHERE id_person = ?", [id_person])
@@ -184,6 +251,12 @@ class DataManager :
         return person
 
     def get_persons_in_group(self, group_id):
+        """Method that returns all the persons in a group, given the group
+           identifier.
+
+           Parameter: group_id (int) : the group identifier.
+
+           Returns : list of tuples of the persons in the specific group"""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM in_group WHERE id_group = ?", [group_id])
@@ -192,6 +265,12 @@ class DataManager :
         return persons
 
     def get_group(self, name):
+        """Method that returns a tuple containing an specific group, given
+           its name.
+
+           Parameter: id_person (int) : the group name.
+
+           Returns : a tuple containing the group."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM groups WHERE name = ?", [name])
@@ -200,6 +279,10 @@ class DataManager :
         return group
 
     def insert_performers(self, performers):
+        """Method that inserts a group of performers into the database.
+
+           Parameter: performers ( dict { str : int} ) : a dictionary
+           containing the performers."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         for performer, performer_id in performers.items():
@@ -209,6 +292,10 @@ class DataManager :
         connection.close()
 
     def insert_albums(self, albums):
+        """Method that inserts a group of albums into the database.
+
+           Parameter: albums ( dict { str : int} ) : a dictionary
+           containing the albums."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         for album, album_id in albums.items():
@@ -218,6 +305,10 @@ class DataManager :
         connection.close()
 
     def insert_rolas(self, rolas):
+        """Method that inserts a group of rolas into the database.
+
+           Parameter: rolas ( dict { int : rola} ) : a dictionary
+           containing the rolas."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         for id, rola in rolas.items():
@@ -233,6 +324,14 @@ class DataManager :
         connection.close()
 
     def execute_and_get_ids(self, command):
+        """Method that executes a query, defined by a sql string, and returns
+           the identifiers in the rolas table such that satisfy the query
+           parameters.
+
+           Parameter: command (str) : a sql query string.
+
+           Returns : a list of all the identifiers that satisfy the query
+                     parameters."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute(command)
@@ -245,6 +344,15 @@ class DataManager :
         return identifiers
 
     def update_album(self, id, name, year):
+        """Updates the values of an specific album in the database.
+
+           Parameters:
+
+           id (int) : the identifier of the album.
+
+           name (str) : the new album name.
+
+           year (int) : the new album year."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('UPDATE albums \
@@ -254,6 +362,19 @@ class DataManager :
         connection.close()
 
     def update_rola(self, id, title, track, year, genre):
+        """Updates the values of an specific rola in the database.
+
+           Parameters:
+
+           id (int) : the identifier of the rola.
+
+           title (str) : the new rola title.
+
+           track (int) : the new rola track number.
+
+           year (int) : the new rola year.
+
+           genre (str) : the new rola genre."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('UPDATE rolas \
@@ -263,6 +384,15 @@ class DataManager :
         connection.close()
 
     def update_performer(self, id, type, name):
+        """Updates the values of an specific performer in the database.
+
+           Parameters:
+
+           id (int) : the identifier of the performer.
+
+           type (int) : the new performer type.
+
+           name (str) : the new performer name."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('UPDATE performers \
@@ -272,6 +402,18 @@ class DataManager :
         connection.close()
 
     def update_person(self, stage_name, real_name, birth_date, death_date):
+        """Updates the values of an specific person in the database.
+
+           Parameters:
+
+           stage_name (str) : the stage_name of the person. (used to identify
+           the person).
+
+           real_name (str) : the new person real name.
+
+           birth_date (str) : the new person birth_date.
+
+           death_date (str) : the new person death_date."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('UPDATE persons \
@@ -281,6 +423,16 @@ class DataManager :
         connection.close()
 
     def update_group(self, name, start_date, end_date):
+        """Updates the values of an specific group in the database.
+
+           Parameters:
+
+           name (str) : the name of the group. (used to identify
+           the group).
+
+           start_date (str) : the new group start date.
+
+           end_date (str) : the new group end date."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('UPDATE groups \
@@ -290,6 +442,13 @@ class DataManager :
         connection.close()
 
     def is_in_performers(self, name, type):
+        """Checks if an specific performer already exists in the database.
+
+           Parameters:
+
+           name (str) : the name of the performer.
+
+           type (int) : the performer type."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM performers WHERE name = ? AND id_type = ?", (name, type))
@@ -298,6 +457,11 @@ class DataManager :
         return not(performer == None)
 
     def is_unknown(self, id):
+        """Checks if the type of an specific performer is unknown.
+
+           Parameters:
+
+           id (int) : the performer id."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM performers WHERE id_performer = ? ", [id])
