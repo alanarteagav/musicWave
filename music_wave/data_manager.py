@@ -158,6 +158,22 @@ class DataManager :
         connection.close()
         return rola
 
+    def get_person(self, stage_name):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM persons WHERE stage_name = ?", [stage_name])
+        person = cursor.fetchone()
+        connection.close()
+        return person
+
+    def get_group(self, name):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM groups WHERE name = ?", [name])
+        group = cursor.fetchone()
+        connection.close()
+        return group
+
     def insert_performers(self, performers):
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
@@ -203,9 +219,6 @@ class DataManager :
                 identifiers.append(id[0])
         return identifiers
 
-    def insert_performer(self, performer):
-        pass
-
     def update_album(self, id, name, year):
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
@@ -223,3 +236,78 @@ class DataManager :
                         WHERE id_rola = ?' , (title, track, year, genre, id))
         connection.commit()
         connection.close()
+
+    def update_performer(self, id, type, name):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('UPDATE performers \
+                        SET  id_type = ?, name = ?\
+                        WHERE id_performer = ?' , (type, name, id))
+        connection.commit()
+        connection.close()
+
+    def update_person(self, stage_name, real_name, birth_date, death_date):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('UPDATE persons \
+                        SET  stage_name = ?, real_name = ?, birth_date = ?, death_date = ?\
+                        WHERE stage_name = ?' , (stage_name, real_name, birth_date, death_date, stage_name))
+        connection.commit()
+        connection.close()
+
+    def update_group(self, name, start_date, end_date):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('UPDATE groups \
+                        SET  name = ?, start_date = ?, end_date = ? \
+                        WHERE name = ?' , (name, start_date, end_date, name))
+        connection.commit()
+        connection.close()
+
+    def is_in_performers(self, name, type):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM performers WHERE name = ? AND id_type = ?", (name, type))
+        performer = cursor.fetchone()
+        connection.close()
+        return not(performer == None)
+
+    def is_unknown(self, id):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM performers WHERE id_performer = ? ", [id])
+        performer = cursor.fetchone()
+        connection.close()
+        type = int(str(performer[1]))
+        return type == 2
+
+    def insert_performer(self, name, type):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('INSERT INTO performers (id_type, name) \
+                        VALUES (?, ?)', (type, name))
+        connection.commit()
+        connection.close()
+
+    def insert_person(self, stage_name, real_name, birth_date, death_date):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('INSERT INTO persons (stage_name, real_name, birth_date, death_date) \
+                        VALUES (?, ?, ?, ?)', (stage_name, real_name, birth_date, death_date))
+        connection.commit()
+        connection.close()
+
+    def insert_group(self, name, start_date, end_date):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('INSERT INTO groups (name, start_date, end_date) \
+                        VALUES (?, ?, ?)', (name, start_date, end_date))
+        connection.commit()
+        connection.close()
+
+    def get_performers_index():
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM table ORDER BY id DESC LIMIT 1")
+        performer = cursor.fetchone()
+        return int(str(performer[0])) + 1
