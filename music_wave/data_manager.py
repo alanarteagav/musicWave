@@ -471,6 +471,13 @@ class DataManager :
         return type == 2
 
     def is_in_group(self, person_id, group_id):
+        """Checks if an specific person is in an specific group.
+
+           Parameters:
+
+           person_id (int) : the person identifier.
+
+           group_id (int) : the group identifier."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM in_group WHERE id_person = ? AND id_group = ? ", [person_id, group_id])
@@ -479,6 +486,13 @@ class DataManager :
         return not(person == None)
 
     def insert_performer(self, name, type):
+        """Inserts a new performer into the performers table.
+
+           Parameters:
+
+           name (str) : the performer name.
+
+           type (int) : the performer type."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('INSERT INTO performers (id_type, name) \
@@ -487,6 +501,17 @@ class DataManager :
         connection.close()
 
     def insert_person(self, stage_name, real_name, birth_date, death_date):
+        """Inserts a new person into the persons table.
+
+           Parameters:
+
+           stage_name (str) : the stage_name of the person.
+
+           real_name (str) : the new person real name.
+
+           birth_date (str) : the new person birth_date.
+
+           death_date (str) : the new person death_date."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('INSERT INTO persons (stage_name, real_name, birth_date, death_date) \
@@ -495,6 +520,15 @@ class DataManager :
         connection.close()
 
     def insert_group(self, name, start_date, end_date):
+        """Inserts a new group into the groups table.
+
+           Parameters:
+
+           name (str) : the name of the group.
+
+           start_date (str) : the new group start date.
+
+           end_date (str) : the new group end date."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('INSERT INTO groups (name, start_date, end_date) \
@@ -503,16 +537,16 @@ class DataManager :
         connection.close()
 
     def insert_in_group(self, id_person, id_group):
+        """Inserts a person into a group using the in_group table.
+
+           Parameters:
+
+           person_id (int) : the person identifier.
+
+           group_id (int) : the group identifier."""
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
         cursor.execute('INSERT INTO in_group (id_person, id_group) \
                         VALUES (?, ?)', (id_person, id_group))
         connection.commit()
         connection.close()
-
-    def get_performers_index():
-        connection = sqlite3.connect(self.directory + self.database_name)
-        cursor = connection.cursor()
-        cursor.execute("SELECT * FROM table ORDER BY id DESC LIMIT 1")
-        performer = cursor.fetchone()
-        return int(str(performer[0])) + 1

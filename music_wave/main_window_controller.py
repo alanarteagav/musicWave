@@ -244,7 +244,6 @@ class MainWindowController:
         self.rolas = self.miner.get_rolas()
         self.albums = self.miner.get_albums()
         self.performers = self.miner.get_performers()
-        self.search_compiler.update(self.performers, self.albums)
 
     #Responds to a selected row signal in TreeView.
     def on_selected_row(self, caller) :
