@@ -1,8 +1,9 @@
 class SearchCompiler :
+    """SearchCompiler class, used to compile a defined language to make searches
+       in the musicWave program into sql strings."""
 
     def __init__(self):
-        self.performers = {}
-        self.albums = {}
+        "Constructor, does not receive any parameters."
         self.search_fields = {"album" : [],
                               "performer" : [],
                               "title" : [],
@@ -15,11 +16,13 @@ class SearchCompiler :
                               "g" : "genre"}
         self.multiple_sentences = True
 
-    def update(self, performers, albums):
-        self.performers = performers
-        self.albums = albums
-
     def compile(self, string):
+        """Method that receives a string of the defined search language for the
+           program, and compiles it into a sql string.
+
+           Parameter : string (str) : the string of the defined language.
+
+           Returns : the sql string (str)."""
         instructions = string.split('.')
         for instruction in instructions:
             if instruction.isspace():

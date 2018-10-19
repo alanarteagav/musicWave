@@ -1,4 +1,4 @@
-from .data_manager import DataManager
+from music_wave.data_manager import DataManager
 
 import gi
 gi.require_version('Gtk', '3.0')

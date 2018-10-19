@@ -1,4 +1,4 @@
-from .main_window_controller import MainWindowController
+from music_wave.main_window_controller import MainWindowController
 
 import gi
 gi.require_version('Gtk', '3.0')
