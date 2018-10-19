@@ -4,20 +4,20 @@ import threading
 import time
 
 #imports the DAO
-from .data_manager import DataManager
+from music_wave.data_manager import DataManager
 #imports the miner
-from .miner import Miner
+from music_wave.miner import Miner
 #imports the compiler for searchs inside the program
-from .search_compiler import SearchCompiler
+from music_wave.search_compiler import SearchCompiler
 #imports rola class
-from .rola import Rola
+from music_wave.rola import Rola
 #imports tag window controller
-from .tag_window_controller import TagWindowController
-from .rola import Rola
+from music_wave.tag_window_controller import TagWindowController
+from music_wave.rola import Rola
 #imports album window controller
-from .album_window_controller import AlbumWindowController
+from music_wave.album_window_controller import AlbumWindowController
 #imports album window controller
-from .performer_window_controller import PerformerWindowController
+from music_wave.performer_window_controller import PerformerWindowController
 
 import gi
 gi.require_version('Gtk', '3.0')

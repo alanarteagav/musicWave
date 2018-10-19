@@ -1,6 +1,6 @@
 import os
 import os.path
-from .rola import Rola
+from music_wave.rola import Rola
 from mutagen.id3 import ID3
 
 class Miner :
