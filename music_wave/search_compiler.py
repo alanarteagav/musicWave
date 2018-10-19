@@ -47,7 +47,11 @@ class SearchCompiler :
                         elif field == "title" or field == "t" :
                             self.search_fields["title"].append(search)
                         elif field == "year" or field == "y" :
-                            self.search_fields["year"].append(search)
+                            try:
+                                int_search = int(search)
+                                self.search_fields["year"].append(search)
+                            except :
+                                self.search_fields["year"].append(0)
                         elif field == "genre" or field == "g" :
                             self.search_fields["genre"].append(search)
 

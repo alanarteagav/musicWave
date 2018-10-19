@@ -293,12 +293,14 @@ class MainWindowController:
 
     #Launches an tag editro window, with the selected row info from the treeview
     def trigger_tag_window(self):
-        (model, iter) = self.tree_selection.get_selected()
-
-        album = model.get_value(iter, 1)
-        performer = model.get_value(iter, 2)
-        path = model.get_value(iter, 4)
-        id = model.get_value(iter,5)
+        try:
+            (model, iter) = self.tree_selection.get_selected()
+            album = model.get_value(iter, 1)
+            performer = model.get_value(iter, 2)
+            path = model.get_value(iter, 4)
+            id = model.get_value(iter,5)
+        except :
+            return
 
         rola = self.data_manager.get_rola(id)
         self.tag_window_controller.set_id(id)
@@ -322,9 +324,12 @@ class MainWindowController:
 
     #Launches an tag editro window, with the selected row info from the treeview
     def trigger_album_window(self):
-        (model, iter) = self.tree_selection.get_selected()
+        try:
+            (model, iter) = self.tree_selection.get_selected()
 
-        album_name = model.get_value(iter, 1)
+            album_name = model.get_value(iter, 1)
+        except :
+            return
         id = model.get_value(iter,5)
         rola = self.data_manager.get_rola(id)
         album_id = rola[2]
@@ -340,9 +345,12 @@ class MainWindowController:
 
     #Launches an tag editro window, with the selected row info from the treeview
     def trigger_performer_window(self):
-        (model, iter) = self.tree_selection.get_selected()
+        try:
+            (model, iter) = self.tree_selection.get_selected()
+            performer_name = model.get_value(iter, 2)
+        except:
+            return
 
-        performer_name = model.get_value(iter, 2)
         id = model.get_value(iter,5)
         rola = self.data_manager.get_rola(id)
         performer_id = rola[1]
