@@ -105,6 +105,15 @@ class DataManager :
                 performers[performer[0]] = performer[1]
         return performers
 
+    def get_persons(self):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT persons.stage_name \
+                        FROM persons ")
+        persons = cursor.fetchall()
+        connection.close()
+        return persons
+
     def get_albums(self):
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
@@ -165,6 +174,22 @@ class DataManager :
         person = cursor.fetchone()
         connection.close()
         return person
+
+    def get_person_by_id(self, id_person):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM persons WHERE id_person = ?", [id_person])
+        person = cursor.fetchone()
+        connection.close()
+        return person
+
+    def get_persons_in_group(self, group_id):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM in_group WHERE id_group = ?", [group_id])
+        persons = cursor.fetchall()
+        connection.close()
+        return persons
 
     def get_group(self, name):
         connection = sqlite3.connect(self.directory + self.database_name)
@@ -281,6 +306,14 @@ class DataManager :
         type = int(str(performer[1]))
         return type == 2
 
+    def is_in_group(self, person_id, group_id):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM in_group WHERE id_person = ? AND id_group = ? ", [person_id, group_id])
+        person = cursor.fetchone()
+        connection.close()
+        return not(person == None)
+
     def insert_performer(self, name, type):
         connection = sqlite3.connect(self.directory + self.database_name)
         cursor = connection.cursor()
@@ -302,6 +335,14 @@ class DataManager :
         cursor = connection.cursor()
         cursor.execute('INSERT INTO groups (name, start_date, end_date) \
                         VALUES (?, ?, ?)', (name, start_date, end_date))
+        connection.commit()
+        connection.close()
+
+    def insert_in_group(self, id_person, id_group):
+        connection = sqlite3.connect(self.directory + self.database_name)
+        cursor = connection.cursor()
+        cursor.execute('INSERT INTO in_group (id_person, id_group) \
+                        VALUES (?, ?)', (id_person, id_group))
         connection.commit()
         connection.close()
 
