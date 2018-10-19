@@ -55,6 +55,7 @@ class MainWindowController:
         self.tag_window_controller = TagWindowController()
         self.album_window_controller = AlbumWindowController()
         self.performer_window_controller = PerformerWindowController()
+        self.performer_window_controller.start()
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file("resources/main.glade")
