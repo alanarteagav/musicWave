@@ -202,6 +202,7 @@
                     <property name="image">image7</property>
                     <property name="relief">none</property>
                     <property name="always_show_image">True</property>
+                    <signal name="clicked" handler="performer" swapped="no"/>
                   </object>
                 </child>
               </object>
