@@ -16,6 +16,8 @@ from .tag_window_controller import TagWindowController
 from .rola import Rola
 #imports album window controller
 from .album_window_controller import AlbumWindowController
+#imports album window controller
+from .performer_window_controller import PerformerWindowController
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -52,6 +54,7 @@ class MainWindowController:
 
         self.tag_window_controller = TagWindowController()
         self.album_window_controller = AlbumWindowController()
+        self.performer_window_controller = PerformerWindowController()
 
         self.builder = Gtk.Builder()
         self.builder.add_from_file("resources/main.glade")
@@ -89,6 +92,7 @@ class MainWindowController:
             "about": (lambda widget : self.about_window.show()),
             "tag": (lambda widget : self.trigger_tag_window()),
             "album": (lambda widget : self.trigger_album_window()),
+            "performer": (lambda widget : self.trigger_performer_window()),
             "search" : (self.on_search_entry_activated)
         }
         self.builder.connect_signals(handlers)
@@ -333,6 +337,40 @@ class MainWindowController:
         self.album_window_controller.set_name_entry_text(name)
         self.album_window_controller.set_year_entry_text(str(year))
         self.album_window_controller.show_window()
+
+    #Launches an tag editro window, with the selected row info from the treeview
+    def trigger_performer_window(self):
+        (model, iter) = self.tree_selection.get_selected()
+
+        performer_name = model.get_value(iter, 2)
+        id = model.get_value(iter,5)
+        rola = self.data_manager.get_rola(id)
+        performer_id = rola[1]
+        self.performer_window_controller.set_id(performer_id)
+        self.performer_window_controller.set_old_name(performer_name)
+        performer = self.data_manager.get_performer(performer_id)
+        type = performer[1]
+        name = performer[2]
+        self.performer_window_controller.set_filter(self.filter)
+        self.performer_window_controller.clear_entries()
+        if type == 0:
+            self.performer_window_controller.set_type("Person")
+            person = self.data_manager.get_person(name)
+            self.performer_window_controller.set_stage_entry_text(person[1])
+            self.performer_window_controller.set_real_entry_text(person[2])
+            self.performer_window_controller.set_birth_entry_text(person[3])
+            self.performer_window_controller.set_death_entry_text(person[4])
+
+        elif type == 1:
+            self.performer_window_controller.set_type("Group")
+            group = self.data_manager.get_group(name)
+            self.performer_window_controller.set_name_entry_text(group[1])
+            self.performer_window_controller.set_start_entry_text(group[2])
+            self.performer_window_controller.set_end_entry_text(group[3])
+        elif type == 2:
+            self.performer_window_controller.set_type("Unknown")
+            self.performer_window_controller.set_name_entry_text(name)
+        self.performer_window_controller.show_window()
 
     #Starts the Main Window Controller object.
     def start(self):
