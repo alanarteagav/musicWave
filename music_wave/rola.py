@@ -1,4 +1,6 @@
 class Rola :
+    """Rola class, used to store ID3v2.4 tags, and identifiers related to
+       a database."""
 
     def __init__(self, id, performer_id, album_id, path, title, track, year, genre):
         """Defines a new rola"""
