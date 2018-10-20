@@ -96,3 +96,9 @@ musicWave project directory:
 ```
 python3 -m setup.py test
 ```
+
+## Author
+
+Arteaga Vázquez Alan Ernesto
+
+Facultad de Ciencias | UNAM
