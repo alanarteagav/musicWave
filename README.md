@@ -20,7 +20,7 @@ musicWave uses the following dependencies:
 - mutagen
 - PyGObject 3.30.1
 - pdoc
-- Gstreamer
+- [GStreamer](https://gstreamer.freedesktop.org/documentation/installing/on-linux.html)
 - pip
 
 to install them, you should run the following commands in the terminal:
